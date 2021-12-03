@@ -541,6 +541,32 @@ ForceBeamColumn3d::computeReactions(double *p0)
       p0[3] -= Fz*(1-c/L);
       p0[4] -= Fz*c/L;      
     }
+    else if (type == LOAD_TAG_Beam3dPartialUniformLoadTrapezoid) {
+        double waa = data(2) * loadFactor;  // Axial
+        double wya = data(0) * loadFactor;  // Transverse
+        double wza = data(1) * loadFactor;  // Transverse
+        double a = data(3) * L;
+        double b = data(4) * L;
+        double wab = data(7) * loadFactor;  // Axial
+        double wyb = data(5) * loadFactor;  // Transverse
+        double wzb = data(6) * loadFactor;  // Transverse
+
+        p0[0] -= (waa + wab) * 0.5 * (b - a);
+        double Ay = (wya + wyb) * 0.5 * (b - a);
+        double By = wya * (b - a) * ((L / 2) - (2 * a + b) / 6);
+        double Cy = wyb * (b - a) * ((L / 2) - (2 * b + a) / 6);
+        p0[1] -= (By + Cy) / L;
+        p0[2] -= Ay - (By + Cy) / L;
+
+
+
+        double Az = (wza + wzb) * 0.5 * (b - a);
+        double Bz = wza * (b - a) * ((L / 2) - (2 * a + b) / 6);
+        double Cz = wzb * (b - a) * ((L / 2) - (2 * b + a) / 6);
+        p0[3] -= (Bz + Cz) / L;
+        p0[4] -= Az - (Bz + Cz) / L;
+
+    }
     else if (type == LOAD_TAG_Beam3dPointLoad) {
       double Py = data(0)*loadFactor;
       double Pz = data(1)*loadFactor;
@@ -1310,6 +1336,7 @@ ForceBeamColumn3d::computeSectionForces(Vector &sp, int isec)
 	}
       }
     }
+
     else if (type == LOAD_TAG_Beam3dPartialUniformLoad) {
       double wa = data(2)*loadFactor;  // Axial
       double wy = data(0)*loadFactor;  // Transverse
@@ -1389,6 +1416,97 @@ ForceBeamColumn3d::computeSectionForces(Vector &sp, int isec)
 	  }
 	}
       }
+    }
+    else if (type == LOAD_TAG_Beam3dPartialUniformLoadTrapezoid) {
+    double waa = data(2) * loadFactor;  // Axial
+    double wya = data(0) * loadFactor;  // Transverse
+    double wza = data(1) * loadFactor;  // Transverse
+    double a = data(3) * L;
+    double b = data(4) * L;
+    double wab = data(7) * loadFactor;  // Axial
+    double wyb = data(5) * loadFactor;  // Transverse
+    double wzb = data(6) * loadFactor;  // Transverse
+
+
+
+    double Ay = (wya + wyb) * 0.5 * (b - a);
+    double By = wya * (b - a) * ((L / 2) - (2 * a + b) / 6);
+    double Cy = wyb * (b - a) * ((L / 2) - (2 * b + a) / 6);
+    double VyI = (By + Cy) / L;
+    double VyJ = Ay - (By + Cy) / L;
+    double Az = (wza + wzb) * 0.5 * (b - a);
+    double Bz = wza * (b - a) * ((L / 2) - (2 * a + b) / 6);
+    double Cz = wzb * (b - a) * ((L / 2) - (2 * b + a) / 6);
+    double VzI = (Bz + Cz) / L; 
+    double VzJ = Az - (Bz + Cz) / L;
+    double Fa = (waa + wab) * 0.5 * (b - a); // resultant axial load
+
+
+
+    for (int ii = 0; ii < order; ii++) {
+
+        if (x <= a) {
+            switch (code(ii)) {
+            case SECTION_RESPONSE_P:
+                sp(ii) += Fa;
+                break;
+            case SECTION_RESPONSE_MZ:
+                sp(ii) -= VyI * x;
+                break;
+            case SECTION_RESPONSE_MY:
+                sp(ii) += VzI * x;
+                break;
+            case SECTION_RESPONSE_VY:
+                sp(ii) -= VyI;
+                break;
+            case SECTION_RESPONSE_VZ:
+                sp(ii) -= VzI;
+                break;
+            default:
+                break;
+            }
+        }
+        else if (x >= b) {
+            switch (code(ii)) {
+            case SECTION_RESPONSE_MZ:
+                sp(ii) += VyJ * (x - L);
+                break;
+            case SECTION_RESPONSE_MY:
+                sp(ii) -= VzJ * (x - L);
+                break;
+            case SECTION_RESPONSE_VY:
+                sp(ii) += VyJ;
+                break;
+            case SECTION_RESPONSE_VZ:
+                sp(ii) += VzJ;
+                break;
+            default:
+                break;
+            }
+        }
+        else {
+            switch (code(ii)) {
+            case SECTION_RESPONSE_P:
+                sp(ii) += Fa - (waa + (waa + (wab - waa)/(b - a) * (x - a))) * 0.5 * (x - a);
+                break;
+            case SECTION_RESPONSE_MZ:
+                sp(ii) += -VyI * x + wya * (x - a) * (x - a) / 2 + (wyb - wya) * (x - a) * (x - a) * (x - a) / (b - a) / 6;
+                break;
+            case SECTION_RESPONSE_MY:
+                sp(ii) += VzI * x - wza * (x - a) * (x - a) * 0.5 - (wzb - wza) * (x - a) * (x - a) * (x - a) / (b - a) / 6;
+                break;
+            case SECTION_RESPONSE_VY:
+                // TODO: Check element
+                sp(ii) += -VyI + wya * (x - a) + (wyb - wya) * (x - a) * (x - a) / (b - a) / 2; 
+                break;
+            case SECTION_RESPONSE_VZ:
+                sp(ii) += -VzI + wza * (x - a) + (wzb - wza) * (x - a) * (x - a) / (b - a) / 2;
+                break;
+            default:
+                break;
+            }
+        }
+    }
     }
     else if (type == LOAD_TAG_Beam3dPointLoad) {
       double Py = data(0)*loadFactor;
