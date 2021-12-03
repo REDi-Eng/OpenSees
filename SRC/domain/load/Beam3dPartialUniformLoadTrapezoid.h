@@ -17,52 +17,53 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-                                                                        
-// $Revision: 1.3 $
-// $Date: 2007-10-17 22:11:35 $
-// $Source: /usr/local/cvs/OpenSees/SRC/domain/load/Beam3dUniformLoad.h,v $
-                                                                        
-#ifndef Beam3dUniformLoad_h
-#define Beam3dUniformLoad_h
+
+// $Revision$
+// $Date$
+// $Source$
+
+#ifndef Beam3dPartialUniformLoadTrapezoid_h
+#define Beam3dPartialUniformLoadTrapezoid_h
 
 // Written: fmk 
 
-// Purpose: This file contains the class definition for Beam3dUniformLoad.
+// Purpose: This file contains the class definition for Beam3dPartialUniformLoad.
 
 #include <ElementalLoad.h>
 
-class Beam3dUniformLoad : public ElementalLoad
+class Beam3dPartialUniformLoadTrapezoid : public ElementalLoad
 {
-  public:
-    Beam3dUniformLoad(int tag, double wy, double wz, double wx, int eleTag);
-    Beam3dUniformLoad(int tag, double wya, double wza, double wxa, double aoverL, double boverL, double wyb, double wzb, double wxb,  int eleTag);
-		      
-    Beam3dUniformLoad();    
-    ~Beam3dUniformLoad();
+public:
+    Beam3dPartialUniformLoadTrapezoid(int tag, double wTransya, double wTransza, double wAxiala, double aL, double bL, double wTransyb, double wTranszb, double wAxialb, int eleTag);
+    Beam3dPartialUniformLoadTrapezoid();
+    ~Beam3dPartialUniformLoadTrapezoid();
 
-    const Vector &getData(int &type, double loadFactor);
+    const Vector& getData(int& type, double loadFactor);
 
-    int sendSelf(int commitTag, Channel &theChannel);  
-    int recvSelf(int commitTag, Channel &theChannel,  FEM_ObjectBroker &theBroker);
-    void Print(OPS_Stream &s, int flag =0);       
+    int sendSelf(int commitTag, Channel& theChannel);
+    int recvSelf(int commitTag, Channel& theChannel, FEM_ObjectBroker& theBroker);
+    void Print(OPS_Stream& s, int flag = 0);
 
-  protected:
-	
-  private:
-    double wy;  // Transverse
-    double wz;  // Transverse
-    double wx;  // Axial
+    int setParameter(const char** argv, int argc, Parameter& param);
+    int updateParameter(int parameterID, Information& info);
+    int activateParameter(int paramID);
 
-    double wya;
-    double wza;
-    double wxa;
-    double aoverL;
-    double boverL;
-    double wyb;
-    double wzb;
-    double wxb;
+    const Vector& getSensitivityData(int gradNumber);
+
+protected:
+
+private:
+    double wTransya;
+    double wTransza;
+    double wAxiala;
+    double aOverL;
+    double bOverL;
+    double wTransyb;
+    double wTranszb;
+    double wAxialb;
     static Vector data;
+
+    int parameterID;
 };
 
 #endif
-
