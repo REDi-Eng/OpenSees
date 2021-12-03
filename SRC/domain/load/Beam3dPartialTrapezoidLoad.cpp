@@ -23,39 +23,39 @@
 // $Source$
 
 
-#include <Beam3dPartialUniformLoadTrapezoid.h>
+#include <Beam3dPartialTrapezoidLoad.h>
 #include <Vector.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 #include <Information.h>
 #include <Parameter.h>
 
-Vector Beam3dPartialUniformLoadTrapezoid::data(8);
+Vector Beam3dPartialTrapezoidLoad::data(8);
 
-Beam3dPartialUniformLoadTrapezoid::Beam3dPartialUniformLoadTrapezoid(int tag, double wya, double wza, double waa,
+Beam3dPartialTrapezoidLoad::Beam3dPartialTrapezoidLoad(int tag, double wya, double wza, double waa,
     double aL, double bL, double wyb, double wzb, double wab, int theElementTag)
-    :ElementalLoad(tag, LOAD_TAG_Beam3dPartialUniformLoadTrapezoid, theElementTag),
+    :ElementalLoad(tag, LOAD_TAG_Beam3dPartialTrapezoidLoad, theElementTag),
     wTransya(wya), wTransza(wza), wAxiala(waa), aOverL(aL), bOverL(bL), wTransyb(wyb), wTranszb(wzb), wAxialb(wab), parameterID(0)
 {
 
 }
 
-Beam3dPartialUniformLoadTrapezoid::Beam3dPartialUniformLoadTrapezoid()
-    :ElementalLoad(LOAD_TAG_Beam3dPartialUniformLoadTrapezoid),
+Beam3dPartialTrapezoidLoad::Beam3dPartialTrapezoidLoad()
+    :ElementalLoad(LOAD_TAG_Beam3dPartialTrapezoidLoad),
     wTransya(0.0), wTransza(0.0), wAxiala(0.0), aOverL(0.0), bOverL(0.0), wTransyb(0.0), wTranszb(0.0), wAxialb(0.0), parameterID(0)
 {
 
 }
 
-Beam3dPartialUniformLoadTrapezoid::~Beam3dPartialUniformLoadTrapezoid()
+Beam3dPartialTrapezoidLoad::~Beam3dPartialTrapezoidLoad()
 {
 
 }
 
 const Vector&
-Beam3dPartialUniformLoadTrapezoid::getData(int& type, double loadFactor)
+Beam3dPartialTrapezoidLoad::getData(int& type, double loadFactor)
 {
-    type = LOAD_TAG_Beam3dPartialUniformLoadTrapezoid;
+    type = LOAD_TAG_Beam3dPartialTrapezoidLoad;
     data(0) = wTransya;
     data(1) = wTransza;
     data(2) = wAxiala;
@@ -69,7 +69,7 @@ Beam3dPartialUniformLoadTrapezoid::getData(int& type, double loadFactor)
 
 
 int
-Beam3dPartialUniformLoadTrapezoid::sendSelf(int commitTag, Channel& theChannel)
+Beam3dPartialTrapezoidLoad::sendSelf(int commitTag, Channel& theChannel)
 {
     int dbTag = this->getDbTag();
 
@@ -88,7 +88,7 @@ Beam3dPartialUniformLoadTrapezoid::sendSelf(int commitTag, Channel& theChannel)
 
     int result = theChannel.sendVector(dbTag, commitTag, vectData);
     if (result < 0) {
-        opserr << "Beam3dPartialUniformLoadTrapezoid::sendSelf - failed to send data\n";
+        opserr << "Beam3dPartialTrapezoidLoad::sendSelf - failed to send data\n";
         return result;
     }
 
@@ -96,7 +96,7 @@ Beam3dPartialUniformLoadTrapezoid::sendSelf(int commitTag, Channel& theChannel)
 }
 
 int
-Beam3dPartialUniformLoadTrapezoid::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectBroker& theBroker)
+Beam3dPartialTrapezoidLoad::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectBroker& theBroker)
 {
     int dbTag = this->getDbTag();
 
@@ -123,7 +123,7 @@ Beam3dPartialUniformLoadTrapezoid::recvSelf(int commitTag, Channel& theChannel, 
 }
 
 void
-Beam3dPartialUniformLoadTrapezoid::Print(OPS_Stream& s, int flag)
+Beam3dPartialTrapezoidLoad::Print(OPS_Stream& s, int flag)
 {
     s << "Beam3dPartialUniformLoadTrapezoid - tag " << this->getTag() << endln;
     s << "  Transverse y A Point: " << wTransya << endln;
@@ -138,7 +138,7 @@ Beam3dPartialUniformLoadTrapezoid::Print(OPS_Stream& s, int flag)
 }
 
 int
-Beam3dPartialUniformLoadTrapezoid::setParameter(const char** argv, int argc, Parameter& param)
+Beam3dPartialTrapezoidLoad::setParameter(const char** argv, int argc, Parameter& param)
 {
     if (argc < 1)
         return -1;
@@ -171,7 +171,7 @@ Beam3dPartialUniformLoadTrapezoid::setParameter(const char** argv, int argc, Par
 }
 
 int
-Beam3dPartialUniformLoadTrapezoid::updateParameter(int parameterID, Information& info)
+Beam3dPartialTrapezoidLoad::updateParameter(int parameterID, Information& info)
 {
     switch (parameterID) {
     case 1:
@@ -204,7 +204,7 @@ Beam3dPartialUniformLoadTrapezoid::updateParameter(int parameterID, Information&
 }
 
 int
-Beam3dPartialUniformLoadTrapezoid::activateParameter(int paramID)
+Beam3dPartialTrapezoidLoad::activateParameter(int paramID)
 {
     parameterID = paramID;
 
@@ -212,7 +212,7 @@ Beam3dPartialUniformLoadTrapezoid::activateParameter(int paramID)
 }
 
 const Vector&
-Beam3dPartialUniformLoadTrapezoid::getSensitivityData(int gradNumber)
+Beam3dPartialTrapezoidLoad::getSensitivityData(int gradNumber)
 {
     data.Zero();
 

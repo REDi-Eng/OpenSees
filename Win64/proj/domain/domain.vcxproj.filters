@@ -312,7 +312,7 @@
     <ClCompile Include="..\..\..\SRC\domain\load\Beam3dPartialUniformLoad.cpp">
       <Filter>load\beam</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\domain\load\Beam3dPartialUniformLoadTrapezoid.cpp">
+    <ClCompile Include="..\..\..\SRC\domain\load\Beam3dPartialTrapezoidLoad.cpp">
       <Filter>load\beam</Filter>
     </ClCompile>
   </ItemGroup>
@@ -581,7 +581,7 @@
     <ClInclude Include="..\..\..\SRC\domain\load\Beam3dPartialUniformLoad.h">
       <Filter>load\beam</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\SRC\domain\load\Beam3dPartialUniformLoadTrapezoid.h">
+    <ClInclude Include="..\..\..\SRC\domain\load\Beam3dPartialTrapezoidLoad.h">
       <Filter>load\beam</Filter>
     </ClInclude>
   </ItemGroup>

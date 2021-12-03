@@ -541,7 +541,7 @@ ForceBeamColumn3d::computeReactions(double *p0)
       p0[3] -= Fz*(1-c/L);
       p0[4] -= Fz*c/L;      
     }
-    else if (type == LOAD_TAG_Beam3dPartialUniformLoadTrapezoid) {
+    else if (type == LOAD_TAG_Beam3dPartialTrapezoidLoad) {
         double waa = data(2) * loadFactor;  // Axial
         double wya = data(0) * loadFactor;  // Transverse
         double wza = data(1) * loadFactor;  // Transverse
@@ -1417,7 +1417,7 @@ ForceBeamColumn3d::computeSectionForces(Vector &sp, int isec)
 	}
       }
     }
-    else if (type == LOAD_TAG_Beam3dPartialUniformLoadTrapezoid) {
+    else if (type == LOAD_TAG_Beam3dPartialTrapezoidLoad) {
     double waa = data(2) * loadFactor;  // Axial
     double wya = data(0) * loadFactor;  // Transverse
     double wza = data(1) * loadFactor;  // Transverse

@@ -22,8 +22,8 @@
 // $Date$
 // $Source$
 
-#ifndef Beam3dPartialUniformLoadTrapezoid_h
-#define Beam3dPartialUniformLoadTrapezoid_h
+#ifndef Beam3dPartialTrapezoidLoad_h
+#define Beam3dPartialTrapezoidLoad_h
 
 // Written: fmk 
 
@@ -31,12 +31,12 @@
 
 #include <ElementalLoad.h>
 
-class Beam3dPartialUniformLoadTrapezoid : public ElementalLoad
+class Beam3dPartialTrapezoidLoad : public ElementalLoad
 {
 public:
-    Beam3dPartialUniformLoadTrapezoid(int tag, double wTransya, double wTransza, double wAxiala, double aL, double bL, double wTransyb, double wTranszb, double wAxialb, int eleTag);
-    Beam3dPartialUniformLoadTrapezoid();
-    ~Beam3dPartialUniformLoadTrapezoid();
+    Beam3dPartialTrapezoidLoad(int tag, double wTransya, double wTransza, double wAxiala, double aL, double bL, double wTransyb, double wTranszb, double wAxialb, int eleTag);
+    Beam3dPartialTrapezoidLoad();
+    ~Beam3dPartialTrapezoidLoad();
 
     const Vector& getData(int& type, double loadFactor);
 
