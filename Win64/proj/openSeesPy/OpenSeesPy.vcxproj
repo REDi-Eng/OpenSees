@@ -81,7 +81,7 @@
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug.DLL|x64'">true</LinkIncremental>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.pyd</TargetExt>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release.DLL|x64'">.pyd</TargetExt>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">opensees</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">opensees-redi</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release.DLL|x64'">opensees</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
