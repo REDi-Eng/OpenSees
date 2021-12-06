@@ -23,11 +23,10 @@
 # ------------------------------
 
 foreach eleType {truss corotTruss} {
-    
+
     # Create ModelBuilder (with two-dimensions and 2 DOF/node)
-    wipe
     model BasicBuilder -ndm 2 -ndf 2
-    
+    wipe
     # Create nodes
     # ------------
     

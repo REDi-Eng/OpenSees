@@ -1382,9 +1382,6 @@ DispBeamColumn3d::setResponse(const char **argv, int argc, OPS_Stream &output)
     else if (strcmp(argv[0],"integrationWeights") == 0)
       theResponse = new ElementResponse(this, 11, Vector(numSections));
 
-    else if (strcmp(argv[0],"sectionTags") == 0)
-      theResponse = new ElementResponse(this, 110, ID(numSections));
-
     else if (strcmp(argv[0],"xaxis") == 0 || strcmp(argv[0],"xlocal") == 0)
       theResponse = new ElementResponse(this, 201, Vector(3));
 
@@ -1560,13 +1557,6 @@ DispBeamColumn3d::getResponse(int responseID, Information &eleInfo)
     return eleInfo.setVector(weights);
   }
 
-  else if (responseID == 110) {
-    ID tags(numSections);
-    for (int i = 0; i < numSections; i++)
-      tags(i) = theSections[i]->getTag();
-    return eleInfo.setID(tags);
-  }
-  
   else if (responseID >= 201 && responseID <= 203) {
     static Vector xlocal(3);
     static Vector ylocal(3);
@@ -1701,7 +1691,7 @@ DispBeamColumn3d::activateParameter(int passedParameterID)
 }
 
 const Matrix &
-DispBeamColumn3d::getInitialStiffSensitivity(int gradNumber)
+DispBeamColumn3d::getKiSensitivity(int gradNumber)
 {
 	K.Zero();
 	return K;

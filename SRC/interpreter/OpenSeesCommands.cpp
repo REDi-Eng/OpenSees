@@ -70,7 +70,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <TransformationConstraintHandler.h>
 #include <Newmark.h>
 #include <GimmeMCK.h>
-#include <HarmonicSteadyState.h>
 #include <ProfileSPDLinSolver.h>
 #include <ProfileSPDLinDirectSolver.h>
 #include <ProfileSPDLinSOE.h>
@@ -1440,9 +1439,6 @@ int OPS_Integrator()
     } else if (strcmp(type,"MinUnbalDispNorm") == 0) {
 	si = (StaticIntegrator*)OPS_MinUnbalDispNorm();
 
-    } else if (strcmp(type,"HarmonicSteadyState") == 0 || strcmp(type,"HarmonicSS") == 0) {
-	si = (StaticIntegrator*)OPS_HarmonicSteadyState();
-
     } else if (strcmp(type,"Newmark") == 0) {
 	ti = (TransientIntegrator*)OPS_Newmark();
 
@@ -1567,7 +1563,7 @@ int OPS_Integrator()
 	ti = (TransientIntegrator*)OPS_CentralDifferenceNoDamping();
 
 	} else if (strcmp(type, "ExplicitDifference") == 0) {
-    ti = (TransientIntegrator*)OPS_ExplicitDifference();
+    ti = (TransientIntegrator*)OPS_Explicitdifference();
 
     } else {
 	opserr<<"WARNING unknown integrator type "<<type<<"\n";
@@ -1622,8 +1618,6 @@ int OPS_Algorithm()
     } else if (strcmp(type, "PeriodicNewton") == 0) {
 	theAlgo = (EquiSolnAlgo*) OPS_PeriodicNewton();
 
-    } else if (strcmp(type, "ExpressNewton") == 0) {
-	theAlgo = (EquiSolnAlgo*) OPS_ExpressNewton();	
 
     } else if (strcmp(type, "Broyden") == 0) {
 	theAlgo = (EquiSolnAlgo*)OPS_Broyden();
@@ -3063,28 +3057,6 @@ int OPS_systemSize()
     if (OPS_SetIntOutput(&numdata, &value, true) < 0) {
 	opserr << "WARNING failed to set output\n";
 	return -1;
-    }
-
-    return 0;
-}
-
-int OPS_domainCommitTag() {
-    if (cmds == 0) {
-        return 0;
-    }
-
-    int commitTag = cmds->getDomain()->getCommitTag();
-    int numdata = 1;
-    if (OPS_GetNumRemainingInputArgs() > 0) {
-        if (OPS_GetIntInput(&numdata, &commitTag) < 0) {
-            opserr << "WARNING: failed to get commitTag\n";
-            return -1;
-        }
-        cmds->getDomain()->setCommitTag(commitTag);
-    }
-    if (OPS_SetIntOutput(&numdata, &commitTag, true) < 0) {
-        opserr << "WARNING failed to set commitTag\n";
-        return 0;
     }
 
     return 0;

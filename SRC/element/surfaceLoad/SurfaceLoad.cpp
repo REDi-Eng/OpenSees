@@ -511,14 +511,14 @@ SurfaceLoad::Print(OPS_Stream &s, int flag)
 }
 
 Response*
-SurfaceLoad::setResponse(const char **argv, int argc, OPS_Stream &output)
+SurfaceLoad::setResponse(const char **argv, int argc, Information &eleInfo)
 {
-  return Element::setResponse(argv, argc, output);
+    return 0;
 }
 
 int 
 SurfaceLoad::getResponse(int responseID, Information &eleInfo)
 {
-  return Element::getResponse(responseID, eleInfo);
+	return -1;
 }
 

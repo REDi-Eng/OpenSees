@@ -98,7 +98,7 @@ PenaltyMaterial::PenaltyMaterial(int tag, UniaxialMaterial &material, double mul
 
   if (theMaterial == 0) {
     opserr <<  "PenaltyMaterial::PenaltyMaterial -- failed to get copy of material\n";
-    //exit(-1);
+    exit(-1);
   }
 }
 
@@ -117,101 +117,72 @@ PenaltyMaterial::~PenaltyMaterial()
 int 
 PenaltyMaterial::setTrialStrain(double strain, double strainRate)
 {
-  if (theMaterial)
-    return theMaterial->setTrialStrain(strain, strainRate);
-  else
-    return -1;
+  return theMaterial->setTrialStrain(strain, strainRate);
 }
 
 
 int 
 PenaltyMaterial::setTrialStrain(double strain, double temp, double strainRate)
 {
-  if (theMaterial)
-    return theMaterial->setTrialStrain(strain, temp, strainRate);
-  else
-    return -1;
+  return theMaterial->setTrialStrain(strain, temp, strainRate);
 }
 
 
 double 
 PenaltyMaterial::getStress(void)
 {
-  if (theMaterial)
-    return theMaterial->getStress() + penalty*theMaterial->getStrain();
-  else
-    return 0.0;
+  return theMaterial->getStress() + penalty*theMaterial->getStrain();
 }
 
 double 
 PenaltyMaterial::getTangent(void)
 {
-  if (theMaterial)
-    return theMaterial->getTangent() + penalty;
-  else
-    return 0.0;
+  return theMaterial->getTangent() + penalty;
 }
 
 double 
 PenaltyMaterial::getDampTangent(void)
 {
-  if (theMaterial)
-    return theMaterial->getDampTangent();
-  else
-    return 0.0;
+  return theMaterial->getDampTangent();
 }
+
+
 
 double 
 PenaltyMaterial::getStrain(void)
 {
-  if (theMaterial)
-    return theMaterial->getStrain();
-  else
-    return 0.0;
+  return theMaterial->getStrain();
 }
 
 double 
 PenaltyMaterial::getStrainRate(void)
 {
-  if (theMaterial)  
-    return theMaterial->getStrainRate();
-  else
-    return 0.0;
+  return theMaterial->getStrainRate();
 }
 
 int 
 PenaltyMaterial::commitState(void)
-{
-  if (theMaterial)
-    return theMaterial->commitState();
-  else
-    return -1;
+{	
+  return theMaterial->commitState();
 }
 
 int 
 PenaltyMaterial::revertToLastCommit(void)
 {
-  if (theMaterial)
-    return theMaterial->revertToLastCommit();
-  else
-    return -1;
+  return theMaterial->revertToLastCommit();
 }
 
 int 
 PenaltyMaterial::revertToStart(void)
 {
-  if (theMaterial)  
-    return theMaterial->revertToStart();
-  else
-    return -1;
+  return theMaterial->revertToStart();
 }
 
 UniaxialMaterial *
 PenaltyMaterial::getCopy(void)
 {
-  PenaltyMaterial *theCopy = 0;
-  if (theMaterial)
-    theCopy = new PenaltyMaterial(this->getTag(), *theMaterial, penalty);
+  PenaltyMaterial *theCopy = 
+    new PenaltyMaterial(this->getTag(), *theMaterial, penalty);
         
   return theCopy;
 }
@@ -219,11 +190,6 @@ PenaltyMaterial::getCopy(void)
 int 
 PenaltyMaterial::sendSelf(int cTag, Channel &theChannel)
 {
-  if (theMaterial == 0) {
-    opserr << "PenaltyMaterial::sendSelf() - theMaterial is null, nothing to send\n";
-    return -1;
-  }
-  
   int dbTag = this->getDbTag();
 
   static ID dataID(3);
@@ -300,10 +266,7 @@ void
 PenaltyMaterial::Print(OPS_Stream &s, int flag)
 {
   s << "PenaltyMaterial tag: " << this->getTag() << endln;
-  if (theMaterial)
-    s << "\tMaterial: " << theMaterial->getTag() << endln;
-  else
-    s << "\tMaterial is NULL" << endln;  
+  s << "\tMaterial: " << theMaterial->getTag() << endln;
   s << "\tPenalty: " << penalty << endln;
 }
 
@@ -314,10 +277,7 @@ PenaltyMaterial::setParameter(const char **argv, int argc, Parameter &param)
     param.setValue(penalty);
     return param.addObject(1,this);
   }
-  if (theMaterial)
-    return theMaterial->setParameter(argv, argc, param);
-  else
-    return -1;
+  return theMaterial->setParameter(argv, argc, param);
 }
 
 int
@@ -345,9 +305,6 @@ PenaltyMaterial::activateParameter(int paramID)
 double
 PenaltyMaterial::getStressSensitivity(int gradIndex, bool conditional)
 {
-  if (theMaterial == 0)
-    return 0.0;
-  
   // dsig = dsigma + dalpha*strain < + alpha*dstrain>
   if (parameterID == 1)
     return theMaterial->getStrain(); // dalpha*strain where dalpha=1
@@ -358,10 +315,7 @@ PenaltyMaterial::getStressSensitivity(int gradIndex, bool conditional)
 double
 PenaltyMaterial::getStrainSensitivity(int gradIndex)
 {
-  if (theMaterial)
-    return theMaterial->getStrainSensitivity(gradIndex);
-  else
-    return 0.0;
+  return theMaterial->getStrainSensitivity(gradIndex);
 }
 
 double
@@ -369,37 +323,24 @@ PenaltyMaterial::getInitialTangentSensitivity(int gradIndex)
 {
   if (parameterID == 1)
     return 1.0;
-  else {
-    if (theMaterial)
-      return theMaterial->getInitialTangentSensitivity(gradIndex);
-    else
-      return 0.0;
-  }
+  else
+    return theMaterial->getInitialTangentSensitivity(gradIndex);
 }
 
 double
 PenaltyMaterial::getDampTangentSensitivity(int gradIndex)
 {
-  if (theMaterial)
-    return theMaterial->getDampTangentSensitivity(gradIndex);
-  else
-    return 0.0;
+  theMaterial->getDampTangentSensitivity(gradIndex);
 }
 
 double
 PenaltyMaterial::getRhoSensitivity(int gradIndex)
 {
-  if (theMaterial)
-    return theMaterial->getRhoSensitivity(gradIndex);
-  else
-    return 0.0;
+  return theMaterial->getRhoSensitivity(gradIndex);
 }
 
 int
 PenaltyMaterial::commitSensitivity(double strainGradient, int gradIndex, int numGrads)
 {
-  if (theMaterial)
-    return theMaterial->commitSensitivity(strainGradient, gradIndex, numGrads);
-  else
-    return -1;
+  return theMaterial->commitSensitivity(strainGradient, gradIndex, numGrads);
 }

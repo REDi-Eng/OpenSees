@@ -323,26 +323,20 @@ int OPS_ElementalLoad()
 	}
 
 	else if (ndm == 3) {
-	    // wya, wza, wxa,aoverL,boverL,wyb, wzb, wxb
-	    double data[8] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+	    // wy, wz, wx
+	    double data[3] = {0.0, 0.0, 0.0};
 	    int numdata = OPS_GetNumRemainingInputArgs();
 	    if (numdata < 2) {
 		opserr<<"WARNING eleLoad - beamUniform want Wy Wz <Wx>\n";
 		return -1;
 	    }
-		//if (numdata > 3)  numdata = 3;
+	    if (numdata > 3) numdata = 3;
 	    if (OPS_GetDoubleInput(&numdata, data) < 0) {
 		opserr<<"WARNING eleLoad - invalid value for beamUniform\n";
 		return -1;
 	    }
 	    for (int i=0; i<theEleTags.Size(); i++) {
-			if(numdata<8){
-				theLoad = new Beam3dUniformLoad(eleLoadTag, data[0], data[1], data[2], theEleTags(i));
-			}
-			else{
-				theLoad = new Beam3dUniformLoad(eleLoadTag, data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], theEleTags(i));
-			}
-				
+		theLoad = new Beam3dUniformLoad(eleLoadTag, data[0], data[1], data[2], theEleTags(i));
 
 		if (theLoad == 0) {
 		    opserr << "WARNING eleLoad - out of memory creating load of type " << type;

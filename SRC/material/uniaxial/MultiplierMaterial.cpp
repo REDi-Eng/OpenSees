@@ -99,7 +99,7 @@ MultiplierMaterial::MultiplierMaterial(int tag, UniaxialMaterial &material, doub
 
   if (theMaterial == 0) {
     opserr <<  "MultiplierMaterial::MultiplierMaterial -- failed to get copy of material\n";
-    //exit(-1);
+    exit(-1);
   }
 }
 
@@ -118,48 +118,33 @@ MultiplierMaterial::~MultiplierMaterial()
 int 
 MultiplierMaterial::setTrialStrain(double strain, double strainRate)
 {
-  if (theMaterial)
-    return theMaterial->setTrialStrain(strain, strainRate);
-  else
-    return -1;
+  return theMaterial->setTrialStrain(strain, strainRate);
 }
 
 
 int 
 MultiplierMaterial::setTrialStrain(double strain, double temp, double strainRate)
 {
-  if (theMaterial)
-    return theMaterial->setTrialStrain(strain, temp, strainRate);
-  else
-    return -1;
+  return theMaterial->setTrialStrain(strain, temp, strainRate);
 }
 
 
 double 
 MultiplierMaterial::getStress(void)
 {
-  if (theMaterial)
-    return multiplier*theMaterial->getStress();
-  else
-    return 0.0;
+  return multiplier*theMaterial->getStress();
 }
 
 double 
 MultiplierMaterial::getTangent(void)
 {
-  if (theMaterial)
-    return multiplier*theMaterial->getTangent();
-  else
-    return 0.0;
+  return multiplier*theMaterial->getTangent();
 }
 
 double 
 MultiplierMaterial::getDampTangent(void)
 {
-  if (theMaterial)
-    return multiplier*theMaterial->getDampTangent();
-  else
-    return 0.0;
+  return multiplier*theMaterial->getDampTangent();
 }
 
 
@@ -167,54 +152,38 @@ MultiplierMaterial::getDampTangent(void)
 double 
 MultiplierMaterial::getStrain(void)
 {
-  if (theMaterial)
-    return theMaterial->getStrain();
-  else
-    return 0.0;
+  return theMaterial->getStrain();
 }
 
 double 
 MultiplierMaterial::getStrainRate(void)
 {
-  if (theMaterial)
-    return theMaterial->getStrainRate();
-  else
-    return 0.0;
+  return theMaterial->getStrainRate();
 }
 
 int 
 MultiplierMaterial::commitState(void)
-{
-  if (theMaterial)
-    return theMaterial->commitState();
-  else
-    return -1;
+{	
+  return theMaterial->commitState();
 }
 
 int 
 MultiplierMaterial::revertToLastCommit(void)
 {
-  if (theMaterial)
-    return theMaterial->revertToLastCommit();
-  else
-    return -1;
+  return theMaterial->revertToLastCommit();
 }
 
 int 
 MultiplierMaterial::revertToStart(void)
 {
-  if (theMaterial)
-    return theMaterial->revertToStart();
-  else
-    return -1;
+  return theMaterial->revertToStart();
 }
 
 UniaxialMaterial *
 MultiplierMaterial::getCopy(void)
 {
-  MultiplierMaterial *theCopy = 0;
-  if (theMaterial)
-    theCopy = new MultiplierMaterial(this->getTag(), *theMaterial, multiplier);
+  MultiplierMaterial *theCopy = 
+    new MultiplierMaterial(this->getTag(), *theMaterial, multiplier);
         
   return theCopy;
 }
@@ -222,11 +191,6 @@ MultiplierMaterial::getCopy(void)
 int 
 MultiplierMaterial::sendSelf(int cTag, Channel &theChannel)
 {
-  if (theMaterial == 0) {
-    opserr << "MultiplierMaterial::sendSelf() - theMaterial is null, nothing to send\n";
-    return -1;
-  }
-  
   int dbTag = this->getDbTag();
 
   static ID dataID(3);
@@ -303,10 +267,7 @@ void
 MultiplierMaterial::Print(OPS_Stream &s, int flag)
 {
   s << "MultiplierMaterial tag: " << this->getTag() << endln;
-  if (theMaterial)
-    s << "\tMaterial: " << theMaterial->getTag() << endln;
-  else
-    s << "\tMaterial is NULL" << endln;
+  s << "\tMaterial: " << theMaterial->getTag() << endln;
   s << "\tMultiplier: " << multiplier << endln;
 }
 
@@ -317,10 +278,7 @@ MultiplierMaterial::setParameter(const char **argv, int argc, Parameter &param)
     param.setValue(multiplier);
     return param.addObject(1,this);
   }
-  if (theMaterial)
-    return theMaterial->setParameter(argv, argc, param);
-  else
-    return -1;
+  return theMaterial->setParameter(argv, argc, param);
 }
 
 int
@@ -348,9 +306,6 @@ MultiplierMaterial::activateParameter(int paramID)
 double
 MultiplierMaterial::getStressSensitivity(int gradIndex, bool conditional)
 {
-  if (theMaterial == 0)
-    return 0.0;
-  
   // dsig = dF*sigma + F*dsigma
   if (parameterID == 1)
     return theMaterial->getStress(); // dF*sigma where dF=1
@@ -361,18 +316,12 @@ MultiplierMaterial::getStressSensitivity(int gradIndex, bool conditional)
 double
 MultiplierMaterial::getStrainSensitivity(int gradIndex)
 {
-  if (theMaterial)
-    return theMaterial->getStrainSensitivity(gradIndex);
-  else
-    return 0.0;
+  return theMaterial->getStrainSensitivity(gradIndex);
 }
 
 double
 MultiplierMaterial::getInitialTangentSensitivity(int gradIndex)
 {
-  if (theMaterial == 0)
-    return 0.0;
-  
   if (parameterID == 1)
     return theMaterial->getInitialTangent();
   else
@@ -382,9 +331,6 @@ MultiplierMaterial::getInitialTangentSensitivity(int gradIndex)
 double
 MultiplierMaterial::getDampTangentSensitivity(int gradIndex)
 {
-  if (theMaterial == 0)
-    return 0.0;
-  
   if (parameterID == 1)
     return theMaterial->getDampTangent();
   else
@@ -394,17 +340,11 @@ MultiplierMaterial::getDampTangentSensitivity(int gradIndex)
 double
 MultiplierMaterial::getRhoSensitivity(int gradIndex)
 {
-  if (theMaterial)
-    return theMaterial->getRhoSensitivity(gradIndex);
-  else
-    return 0.0;
+  return theMaterial->getRhoSensitivity(gradIndex);
 }
 
 int
 MultiplierMaterial::commitSensitivity(double strainGradient, int gradIndex, int numGrads)
 {
-  if (theMaterial)
-    return theMaterial->commitSensitivity(strainGradient, gradIndex, numGrads);
-  else
-    return -1;
+  return theMaterial->commitSensitivity(strainGradient, gradIndex, numGrads);
 }

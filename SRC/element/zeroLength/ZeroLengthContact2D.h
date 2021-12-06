@@ -144,7 +144,7 @@ class ZeroLengthContact2D: public Element
   int displaySelf(Renderer &, int mode, float fact, const char **displayModes=0, int numModes=0);
   void Print(OPS_Stream &s, int flag =0);
 
-  Response *setResponse(const char **argv, int argc, OPS_Stream &output);
+  Response *setResponse(const char **argv, int argc, Information &eleInformation);
   int getResponse(int responseID, Information &eleInformation);
 
   //void updateDir (const Vector& x, const Vector& y);

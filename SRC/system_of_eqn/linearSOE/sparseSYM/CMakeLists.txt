@@ -1,29 +1,20 @@
-#==============================================================================
-# 
-#        OpenSees -- Open System For Earthquake Engineering Simulation
-#                Pacific Earthquake Engineering Research Center
-#
-#==============================================================================
+add_library(systemOfEqn "")
 
-target_sources(OPS_SysOfEqn
+target_sources(systemOfEqn
     PRIVATE
-        SymSparseLinSOE.cpp
-        SymSparseLinSolver.cpp
-        grcm.c
-        nest.c
-        nmat.c
-        symbolic.c
-        utility.c
-        newordr.c
-        nnsim.c
+	SymSparseLinSOE.cpp
+	SymSparseLinSolver.cpp
+	grcm.c
+	nest.c
+	nmat.c
+	symbolic.c
+	utility.c
+	newordr.c
+	nnsim.c
+	genmmd.c
     PUBLIC
-        SymSparseLinSOE.h
-        SymSparseLinSolver.h
+	SymSparseLinSOE.h
+	SymSparseLinSolver.h
 )
 
-add_library(OPS_SysOfEqn_f STATIC)
-target_sources(OPS_SysOfEqn_f PRIVATE genmmd.f)
-target_link_libraries(OPS_SysOfEqn PUBLIC OPS_SysOfEqn_f)
-
-#target_include_directories(OPS_SysOfEqn PUBLIC ${CMAKE_CURRENT_LIST_DIR})
-
+target_include_directories(systemOfEqn PUBLIC $(CMAKE_CURRENT_LIST_DIR))

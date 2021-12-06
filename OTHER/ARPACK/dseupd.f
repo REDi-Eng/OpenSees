@@ -273,8 +273,7 @@ c     | External Subroutines |
 c     %----------------------%
 c
       external   dcopy, dger, dgeqr2, dlacpy, dorm2r, dscal, 
-     &     dsesrt, dsteqr, dswap, dvout, ivout, dsortr,
-     &     ivout1,dvout1
+     &           dsesrt, dsteqr, dswap, dvout, ivout, dsortr
 c
 c     %--------------------%
 c     | External Functions |
@@ -476,7 +475,7 @@ c
              thres1 = workl(ritz)
 c
              if (msglvl .gt. 2) then
-                call dvout1(logfil, 1, thres1, ndigit,
+                call dvout(logfil, 1, thres1, ndigit,
      &          '_seupd: Threshold eigenvalue used for re-ordering')
              end if
 c
@@ -573,9 +572,9 @@ c        | If KTRORD .ne. NCONV, something is wrong. |
 c        %-------------------------------------------%
 c
          if (msglvl .gt. 2) then
-             call ivout1(logfil, 1, ktrord, ndigit,
+             call ivout(logfil, 1, ktrord, ndigit,
      &            '_seupd: Number of specified eigenvalues')
-             call ivout1(logfil, 1, nconv, ndigit,
+             call ivout(logfil, 1, nconv, ndigit,
      &            '_seupd: Number of "converged" eigenvalues')
          end if
 c

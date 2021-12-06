@@ -1,19 +1,10 @@
-#==============================================================================
-# 
-#        OpenSees -- Open System For Earthquake Engineering Simulation
-#                Pacific Earthquake Engineering Research Center
-#
-#==============================================================================
-target_sources(OPS_SysOfEqn
+add_library(systemOfEqn "")
+
+target_sources(systemOfEqn
     PRIVATE
-        UmfpackGenLinSOE.cpp
-        UmfpackGenLinSolver.cpp
 
     PUBLIC
-        UmfpackGenLinSOE.h
-        UmfpackGenLinSolver.h
 
 )
 
-target_include_directories(OPS_SysOfEqn PUBLIC ${CMAKE_CURRENT_LIST_DIR})
-
+target_include_directories(systemOfEqn PUBLIC $(CMAKE_CURRENT_LIST_DIR))

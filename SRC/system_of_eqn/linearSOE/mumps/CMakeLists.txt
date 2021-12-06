@@ -1,15 +1,10 @@
-#==============================================================================
-# 
-#        OpenSees -- Open System For Earthquake Engineering Simulation
-#                Pacific Earthquake Engineering Research Center
-#
-#==============================================================================
+add_library(systemOfEqn "")
 
-target_sources(OPS_SysOfEqn
+target_sources(systemOfEqn
     PRIVATE
 
     PUBLIC
 
 )
 
-target_include_directories(OPS_SysOfEqn PUBLIC ${CMAKE_CURRENT_LIST_DIR})
+target_include_directories(systemOfEqn PUBLIC $(CMAKE_CURRENT_LIST_DIR))

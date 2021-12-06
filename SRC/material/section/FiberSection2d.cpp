@@ -422,15 +422,15 @@ FiberSection2d::getInitialTangent(void)
 
   static double fiberLocs[10000];
   static double fiberArea[10000];
-  
+
   if (sectionIntegr != 0) {
     sectionIntegr->getFiberLocations(numFibers, fiberLocs);
-    sectionIntegr->getFiberWeights(numFibers, fiberArea);    
+    sectionIntegr->getFiberWeights(numFibers, fiberArea);
   }  
   else {
     for (int i = 0; i < numFibers; i++) {
       fiberLocs[i] = matData[2*i];
-      fiberArea[i] = matData[2*i+1];      
+      fiberArea[i] = matData[2*i+1];
     }
   }
 
@@ -857,21 +857,10 @@ Response*
 FiberSection2d::setResponse(const char **argv, int argc,
 			    OPS_Stream &output)
 {
-  Response *theResponse = 0;
-  
-  if (argc > 2 && strcmp(argv[0],"fiber") == 0) {
+  Response *theResponse =0;
 
-    static double fiberLocs[10000];
+  if (argc > 2 || strcmp(argv[0],"fiber") == 0) {
     
-    if (sectionIntegr != 0) {
-      sectionIntegr->getFiberLocations(numFibers, fiberLocs);
-    }  
-    else {
-      for (int i = 0; i < numFibers; i++) {
-	fiberLocs[i] = matData[2*i];
-      }
-    }
-  
     int key = numFibers;
     int passarg = 2;
     
@@ -891,10 +880,9 @@ FiberSection2d::setResponse(const char **argv, int argc,
       // Find first fiber with specified material tag
       for (j = 0; j < numFibers; j++) {
 	if (matTag == theMaterials[j]->getTag()) {
-	  //ySearch = matData[2*j];
-	  ySearch = fiberLocs[j];
+	  ySearch = matData[2*j];
 	  dy = ySearch-yCoord;
-	  closestDist = dy*dy;
+	  closestDist = fabs(dy);
 	  key = j;
 	  break;
 	}
@@ -902,10 +890,9 @@ FiberSection2d::setResponse(const char **argv, int argc,
       // Search the remaining fibers
       for ( ; j < numFibers; j++) {
 	if (matTag == theMaterials[j]->getTag()) {
-	  //ySearch = matData[2*j];
-	  ySearch = fiberLocs[j];	  
+	  ySearch = matData[2*j];
 	  dy = ySearch-yCoord;
-	  distance = dy*dy;
+	  distance = fabs(dy);
 	  if (distance < closestDist) {
 	    closestDist = distance;
 	    key = j;
@@ -922,17 +909,15 @@ FiberSection2d::setResponse(const char **argv, int argc,
       double ySearch, dy;
       double distance;
       
-      //ySearch = matData[0];
-      ySearch = fiberLocs[0];      
+      ySearch = matData[0];
       dy = ySearch-yCoord;
       closestDist = fabs(dy);
       key = 0;
       for (int j = 1; j < numFibers; j++) {
-	//ySearch = matData[2*j];
-	ySearch = fiberLocs[j];	  	
+	ySearch = matData[2*j];
 	dy = ySearch-yCoord;
 	
-	distance = dy*dy;
+	distance = fabs(dy);
 	if (distance < closestDist) {
 	  closestDist = distance;
 	  key = j;
@@ -947,13 +932,14 @@ FiberSection2d::setResponse(const char **argv, int argc,
       output.attr("zLoc",0.0);
       output.attr("area",matData[2*key+1]);
       
-      theResponse = theMaterials[key]->setResponse(&argv[passarg], argc-passarg, output);
+      theResponse =  theMaterials[key]->setResponse(&argv[passarg], argc-passarg, output);
       
       output.endTag();
     }
 
+    return theResponse;
+
   } else if (strcmp(argv[0],"fiberData") == 0) {
-    
     int numData = numFibers*5;
     for (int j = 0; j < numFibers; j++) {
       output.tag("FiberOutput");
@@ -968,27 +954,26 @@ FiberSection2d::setResponse(const char **argv, int argc,
       output.endTag();
     }
     Vector theResponseData(numData);
-    theResponse = new MaterialResponse(this, 5, theResponseData);
+    return theResponse = new MaterialResponse(this, 5, theResponseData);
+
   
   } else if ((strcmp(argv[0],"numFailedFiber") == 0) || (strcmp(argv[0],"numFiberFailed") == 0)) {
     int count = 0;
-    theResponse = new MaterialResponse(this, 6, count);
+    return theResponse = new MaterialResponse(this, 6, count);
 
   } else if ((strcmp(argv[0],"sectionFailed") == 0) || 
 	     (strcmp(argv[0],"hasSectionFailed") == 0) ||
 	     (strcmp(argv[0],"hasFailed") == 0)) {
     int count = 0;
-    theResponse = new MaterialResponse(this, 7, count);
+    return theResponse = new MaterialResponse(this, 7, count);
   }
   //by SAJalali
   else if ((strcmp(argv[0], "energy") == 0) || (strcmp(argv[0], "Energy") == 0)) {
-	  theResponse = new MaterialResponse(this, 8, getEnergy());
+	  return theResponse = new MaterialResponse(this, 8, getEnergy());
   }
 
-  if (theResponse == 0)
-    return SectionForceDeformation::setResponse(argv, argc, output);
-
-  return theResponse;
+// If not a fiber response, call the base class method
+return SectionForceDeformation::setResponse(argv, argc, output);
 }
 
 
@@ -1012,7 +997,6 @@ FiberSection2d::getResponse(int responseID, Information &sectInfo)
     }
     return sectInfo.setVector(data);	
   } else  if (responseID == 6) {
-    
     int count = 0;
     for (int j = 0; j < numFibers; j++) {    
       if (theMaterials[j]->hasFailed() == true)

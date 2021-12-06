@@ -45,16 +45,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <DOF_Group.h>
 #include <Matrix.h>
 #include <LoadPattern.h>
-#include <LoadPatternIter.h>
 #include <FileStream.h>
 #include <ID.h>
-#include <NodalLoad.h>
-#include <NodalLoadIter.h>
-#include <ElementalLoad.h>
-#include <ElementalLoadIter.h>
 #include <Element.h>
 #include <ElementIter.h>
-#include <CrdTransf.h>
 #include <map>
 #include <set>
 #include <Recorder.h>
@@ -76,9 +70,7 @@ void* OPS_EnvelopeElementRecorder();
 void* OPS_PVDRecorder();
 void* OPS_AlgorithmRecorder();
 void* OPS_RemoveRecorder();
-#ifdef _HDF5
 void* OPS_MPCORecorder();
-#endif
 BackgroundMesh& OPS_getBgMesh();
 
 //void* OPS_DriftRecorder();
@@ -108,9 +100,7 @@ namespace {
 	recordersMap.insert(std::make_pair("ElementRemoval", &OPS_RemoveRecorder));
 	recordersMap.insert(std::make_pair("NodeRemoval", &OPS_RemoveRecorder));
 	recordersMap.insert(std::make_pair("Collapse", &OPS_RemoveRecorder));
-#ifdef _HDF5
-	recordersMap.insert(std::make_pair("mpco", &OPS_MPCORecorder));
-#endif
+    recordersMap.insert(std::make_pair("mpco", &OPS_MPCORecorder));
         //recordersMap.insert(std::make_pair("Drift", &OPS_DriftRecorder));
         //recordersMap.insert(std::make_pair("Pattern", &OPS_PatternRecorder));
 
@@ -321,10 +311,6 @@ int OPS_nodeEigenvector()
 
     // get eigen vectors
     Node* theNode = theDomain->getNode(data[0]);
-    if (theNode == 0) {
-	    opserr << "nodeEigenvector - node with tag " << data[0] << " not found\n";
-	    return -1;
-    }
     const Matrix &theEigenvectors = theNode->getEigenvectors();
 
     int size = theEigenvectors.noRows();
@@ -801,7 +787,7 @@ int OPS_printModelGID()
 		if (nNode == 2) {
 		    Node **NodePtrs;
 		    NodePtrs = theElement->getNodePtrs();
-		    ID tagNodes(nNode);
+		    Vector tagNodes(nNode);
 		    for (int i = 0; i < nNode; i++) {
 			tagNodes(i)=NodePtrs[i]->getTag();
 		    }
@@ -856,7 +842,7 @@ int OPS_printModelGID()
 		if (nNode == 4) {
 		    Node **NodePtrs;
 		    NodePtrs = theElement->getNodePtrs();
-		    ID tagNodes(nNode);
+		    Vector tagNodes(nNode);
 		    for (int i = 0; i < nNode; i++) {
 			tagNodes(i)=NodePtrs[i]->getTag();
 		    }
@@ -911,7 +897,7 @@ int OPS_printModelGID()
 		if (nNode == 3) {
 		    Node **NodePtrs;
 		    NodePtrs = theElement->getNodePtrs();
-		    ID tagNodes(nNode);
+		    Vector tagNodes(nNode);
 		    for (int i = 0; i < nNode; i++) {
 			tagNodes(i)=NodePtrs[i]->getTag();
 		    }
@@ -966,7 +952,7 @@ int OPS_printModelGID()
 		if (nNode == 9) {
 		    Node **NodePtrs;
 		    NodePtrs = theElement->getNodePtrs();
-		    ID tagNodes(nNode);
+		    Vector tagNodes(nNode);
 		    for (int i = 0; i < nNode; i++) {
 			tagNodes(i)=NodePtrs[i]->getTag();
 		    }
@@ -1022,7 +1008,7 @@ int OPS_printModelGID()
 		if (nNode == 8) {
 		    Node **NodePtrs;
 		    NodePtrs = theElement->getNodePtrs();
-		    ID tagNodes(nNode);
+		    Vector tagNodes(nNode);
 		    for (int i = 0; i < nNode; i++) {
 			tagNodes(i)=NodePtrs[i]->getTag();
 		    }
@@ -1581,126 +1567,6 @@ int OPS_updateElementDomain()
     return 0;
 }
 
-int OPS_getNDMM()
-{
-
-	int ndm;
-    int numdata = 1;
-
-    if (OPS_GetNumRemainingInputArgs() > 0) {
-
-	  int tag;
-
-	  if (OPS_GetIntInput(&numdata, &tag) < 0) {
-		opserr << "WARNING getNDM nodeTag? \n";
-		return -1;
-	  }
-
-	  Domain* theDomain = OPS_GetDomain();
-	  if (theDomain == 0) return -1;
-	  Node *theNode = theDomain->getNode(tag);
-
-	  if (theNode == 0) {
-		opserr << "WARNING node "<< tag <<" does not exist\n";
-		return -1;
-	  }
-
-	  const Vector& crds = theNode->getCrds();
-	  ndm = crds.Size();
-
-    } else {
-
-	  ndm = OPS_GetNDM();
-
-	}
-
-	int size = 1;
-
-	if (OPS_SetIntOutput(&size, &ndm, false) < 0) {
-	  opserr << "WARNING failed to set output\n";
-	  return -1;
-	}
-
-    return 0;
-}
-
-int OPS_getNDFF()
-{
-
-	int ndf;
-    int numdata = 1;
-
-    if (OPS_GetNumRemainingInputArgs() > 0) {
-
-	  int tag;
-
-	  if (OPS_GetIntInput(&numdata, &tag) < 0) {
-		opserr << "WARNING getNDF nodeTag? \n";
-		return -1;
-	  }
-
-	  Domain* theDomain = OPS_GetDomain();
-	  if (theDomain == 0) return -1;
-	  Node *theNode = theDomain->getNode(tag);
-
-	  if (theNode == 0) {
-		opserr << "WARNING node "<< tag <<" does not exist\n";
-		return -1;
-	  }
-
-	  ndf = theNode->getNumberDOF();
-
-    } else {
-
-	  ndf = OPS_GetNDF();
-
-	}
-
-	int size = 1;
-
-	if (OPS_SetIntOutput(&size, &ndf, false) < 0) {
-	  opserr << "WARNING failed to set output\n";
-	  return -1;
-	}
-
-    return 0;
-}
-
-int OPS_eleType()
-{
-    if (OPS_GetNumRemainingInputArgs() < 1) {
-	opserr << "WARNING want - eleType eleTag?\n";
-	return -1;
-    }
-
-    int tag;
-    int numdata = 1;
-
-    if (OPS_GetIntInput(&numdata, &tag) < 0) {
-	opserr << "WARNING eleType eleTag? \n";
-	return -1;
-    }
-
-    Domain* theDomain = OPS_GetDomain();
-    if (theDomain == 0) return -1;
-    
-    char buffer[80];
-    Element *theElement = theDomain->getElement(tag);
-    if (theElement == 0) {
-        opserr << "WARNING eleType ele " << tag << " not found" << endln;
-        return -1;
-    }
-    const char* type = theElement->getClassType();
-    sprintf(buffer, "%s", type);    
-    
-    if (OPS_SetString(buffer) < 0) {
-      opserr << "WARNING failed to set eleType\n";
-      return -1;
-    }
-
-    return 0;
-}
-
 int OPS_eleNodes()
 {
     if (OPS_GetNumRemainingInputArgs() < 1) {
@@ -2007,25 +1873,6 @@ int OPS_getEleTags()
     }
 
     return 0;
-}
-
-int OPS_getCrdTransfTags()
-{
-  // Defined in CrdTransf.cpp
-  ID transfTags = OPS_getAllCrdTransfTags();
-
-  int size = transfTags.Size();
-  int *data = 0;
-  if (size > 0) {
-    data = &transfTags[0];
-  }
-  
-  if (OPS_SetIntOutput(&size, data, false) < 0) {
-    opserr << "WARNING failed to set outputs\n";
-    return -1;
-  }
-  
-  return 0;
 }
 
 int OPS_getNodeTags() {
@@ -2413,8 +2260,8 @@ int OPS_sectionFlexibility()
 int OPS_sectionLocation()
 {
     // make sure at least one other argument to contain type of system
-    if (OPS_GetNumRemainingInputArgs() < 1) {
-	opserr << "WARNING want - sectionLocation eleTag? <secNum?> \n";
+    if (OPS_GetNumRemainingInputArgs() < 2) {
+	opserr << "WARNING want - sectionLocation eleTag? secNum? \n";
 	return -1;
     }
 
@@ -2423,21 +2270,17 @@ int OPS_sectionLocation()
     //  opserr << argv[i] << ' ' ;
     //opserr << endln;
 
-    int numdata = 1;
-    int tag;
-    if (OPS_GetIntInput(&numdata, &tag) < 0) {
-	opserr << "WARNING sectionLocation eleTag? <secNum?> - could not read int input? \n";
+    int numdata = 2;
+    int data[2];
+
+    if (OPS_GetIntInput(&numdata, data) < 0) {
+	opserr << "WARNING sectionLocation eleTag? secNum? - could not read int input? \n";
 	return -1;
     }
 
-    int secNum = 0;
-    if (OPS_GetNumRemainingInputArgs() > 0) {
-      if (OPS_GetIntInput(&numdata, &secNum) < 0) {
-	opserr << "WARNING sectionLocation eleTag? <secNum?> - could not read int input? \n";
-	return -1;
-      }
-    }
-    
+    int tag = data[0];
+    int secNum = data[1];
+
     Domain* theDomain = OPS_GetDomain();
     if (theDomain == 0) return -1;
 
@@ -2463,27 +2306,20 @@ int OPS_sectionLocation()
     Information &info = theResponse->getInformation();
 
     const Vector &theVec = *(info.theVector);
-    int Np = theVec.Size();
+    if (secNum <= 0 || secNum > theVec.Size()) {
+	opserr << "WARNING invalid secNum\n";
+	delete theResponse;
+	return -1;
+    }
 
-    if (secNum > 0 && secNum <= Np) { // One IP
-      double value = theVec(secNum-1);
-      numdata = 1;
-      if (OPS_SetDoubleOutput(&numdata, &value, true) < 0) {
+    double value = theVec(secNum-1);
+    numdata = 1;
+
+    if (OPS_SetDoubleOutput(&numdata, &value, true) < 0) {
 	opserr << "WARNING failed to set output\n";
 	delete theResponse;
 	return -1;
-      }
-    } else { // All IPs in a list
-      std::vector<double> data(Np);
-      for (int i = 0; i < Np; i++)
-	data[i] = theVec(i);
-      numdata = Np;
-      if (OPS_SetDoubleOutput(&numdata, &data[0], false) < 0) {
-	opserr << "WARNING failed to set output\n";
-	delete theResponse;
-	return -1;
-      }      
-    }        
+    }
 
     delete theResponse;
 
@@ -2493,8 +2329,8 @@ int OPS_sectionLocation()
 int OPS_sectionWeight()
 {
     // make sure at least one other argument to contain type of system
-    if (OPS_GetNumRemainingInputArgs() < 1) {
-	opserr << "WARNING want - sectionWeight eleTag? <secNum?> \n";
+    if (OPS_GetNumRemainingInputArgs() < 2) {
+	opserr << "WARNING want - sectionWeight eleTag? secNum? \n";
 	return -1;
     }
 
@@ -2503,21 +2339,17 @@ int OPS_sectionWeight()
     //  opserr << argv[i] << ' ' ;
     //opserr << endln;
 
-    int numdata = 1;
-    int tag;
-    if (OPS_GetIntInput(&numdata, &tag) < 0) {
-	opserr << "WARNING sectionWeight eleTag? <secNum?> - could not read int input? \n";
+    int numdata = 2;
+    int data[2];
+
+    if (OPS_GetIntInput(&numdata, data) < 0) {
+	opserr << "WARNING sectionWeight eleTag? secNum? - could not read int input? \n";
 	return -1;
     }
 
-    int secNum = 0;
-    if (OPS_GetNumRemainingInputArgs() > 0) {
-      if (OPS_GetIntInput(&numdata, &secNum) < 0) {
-	opserr << "WARNING sectionWeight eleTag? <secNum?> - could not read int input? \n";
-	return -1;
-      }
-    }
-    
+    int tag = data[0];
+    int secNum = data[1];
+
     Domain* theDomain = OPS_GetDomain();
     if (theDomain == 0) return -1;
 
@@ -2543,106 +2375,19 @@ int OPS_sectionWeight()
     Information &info = theResponse->getInformation();
 
     const Vector &theVec = *(info.theVector);
-    int Np = theVec.Size();
+    if (secNum <= 0 || secNum > theVec.Size()) {
+	opserr << "WARNING invalid secNum\n";
+	delete theResponse;
+	return -1;
+    }
 
-    if (secNum > 0 && secNum <= Np) { // One IP
-      double value = theVec(secNum-1);
-      numdata = 1;
-      if (OPS_SetDoubleOutput(&numdata, &value, true) < 0) {
+    double value = theVec(secNum-1);
+    numdata = 1;
+
+    if (OPS_SetDoubleOutput(&numdata, &value, true) < 0) {
 	opserr << "WARNING failed to set output\n";
 	delete theResponse;
 	return -1;
-      }
-    } else { // All IPs in a list
-      std::vector<double> data(Np);
-      for (int i = 0; i < Np; i++)
-	data[i] = theVec(i);
-      numdata = Np;
-      if (OPS_SetDoubleOutput(&numdata, &data[0], false) < 0) {
-	opserr << "WARNING failed to set output\n";
-	delete theResponse;
-	return -1;
-      }      
-    }    
-
-    delete theResponse;
-
-    return 0;
-}
-
-int OPS_sectionTag()
-{
-    // make sure at least one other argument to contain type of system
-    if (OPS_GetNumRemainingInputArgs() < 1) {
-	opserr << "WARNING want - sectionTag eleTag? <secNum?> \n";
-	return -1;
-    }
-
-    //opserr << "sectionLocation: ";
-    //for (int i = 0; i < argc; i++)
-    //  opserr << argv[i] << ' ' ;
-    //opserr << endln;
-
-    int numdata = 1;
-    int tag;
-    if (OPS_GetIntInput(&numdata, &tag) < 0) {
-	opserr << "WARNING sectionTag eleTag? <secNum?> - could not read int input? \n";
-	return -1;
-    }
-
-    int secNum = 0;
-    if (OPS_GetNumRemainingInputArgs() > 0) {
-      if (OPS_GetIntInput(&numdata, &secNum) < 0) {
-	opserr << "WARNING sectionTag eleTag? <secNum?> - could not read int input? \n";
-	return -1;
-      }
-    }
-
-    Domain* theDomain = OPS_GetDomain();
-    if (theDomain == 0) return -1;
-
-    Element *theElement = theDomain->getElement(tag);
-    if (theElement == 0) {
-	opserr << "WARNING sectionTag - element with tag " << tag << " not found in domain \n";
-	return -1;
-    }
-
-    int argcc = 1;
-    char a[80] = "sectionTags";
-    const char *argvv[1];
-    argvv[0] = a;
-
-    DummyStream dummy;
-
-    Response *theResponse = theElement->setResponse(argvv, argcc, dummy);
-    if (theResponse == 0) {
-	return 0;
-    }
-
-    theResponse->getResponse();
-    Information &info = theResponse->getInformation();
-
-    const ID &theID = *(info.theID);
-    int Np = theID.Size();
-
-    if (secNum > 0 && secNum <= Np) { // One IP
-      int value = theID(secNum-1);
-      numdata = 1;
-      if (OPS_SetIntOutput(&numdata, &value, true) < 0) {
-	opserr << "WARNING failed to set output\n";
-	delete theResponse;
-	return -1;
-      }
-    } else { // All IPs in a list
-      std::vector<int> data(Np);
-      for (int i = 0; i < Np; i++)
-	data[i] = theID(i);
-      numdata = Np;
-      if (OPS_SetIntOutput(&numdata, &data[0], false) < 0) {
-	opserr << "WARNING failed to set output\n";
-	delete theResponse;
-	return -1;
-      }      
     }
 
     delete theResponse;
@@ -2835,7 +2580,7 @@ int OPS_basicDeformation()
     int tag;
 
     if (OPS_GetIntInput(&numdata, &tag) < 0) {
-	opserr << "WARNING basicDeformation eleTag? - could not read eleTag? \n";
+	opserr << "WARNING basicDeformation eleTag? dofNum? - could not read eleTag? \n";
 	return -1;
     }
 
@@ -2863,31 +2608,18 @@ int OPS_basicDeformation()
     theResponse->getResponse();
     Information &info = theResponse->getInformation();
 
-    // Vector
-    if (info.theVector != 0) {
-      const Vector &theVec = *(info.theVector);
-      int nbf = theVec.Size();
+    const Vector &theVec = *(info.theVector);
+    int nbf = theVec.Size();
 
-      std::vector<double> data(nbf);
-      for (int i=0; i<nbf; i++) {
+    std::vector<double> data(nbf);
+    for (int i=0; i<nbf; i++) {
 	data[i] = theVec(i);
-      }
-
-      if (OPS_SetDoubleOutput(&nbf, &data[0], false) < 0) {
-	opserr << "WARNING failed to set output\n";
-	delete theResponse;
-	return -1;
-      }
     }
-    // Scalar
-    else {
-      int nbf = 1;
-      double data = info.theDouble;
-      if (OPS_SetDoubleOutput(&nbf, &data, false) < 0) {
+
+    if (OPS_SetDoubleOutput(&nbf, &data[0], false) < 0) {
 	opserr << "WARNING failed to set output\n";
 	delete theResponse;
 	return -1;
-      }      
     }
 
     delete theResponse;
@@ -2912,7 +2644,7 @@ int OPS_basicForce()
     int tag;
 
     if (OPS_GetIntInput(&numdata, &tag) < 0) {
-	opserr << "WARNING basicForce eleTag? - could not read eleTag? \n";
+	opserr << "WARNING basicForce eleTag? dofNum? - could not read eleTag? \n";
 	return -1;
     }
 
@@ -2945,31 +2677,18 @@ int OPS_basicForce()
     theResponse->getResponse();
     Information &info = theResponse->getInformation();
 
-    // Vector
-    if (info.theVector != 0) {
-      const Vector &theVec = *(info.theVector);
-      int nbf = theVec.Size();
+    const Vector &theVec = *(info.theVector);
+    int nbf = theVec.Size();
 
-      std::vector<double> data(nbf);
-      for (int i=0; i<nbf; i++) {
+    std::vector<double> data(nbf);
+    for (int i=0; i<nbf; i++) {
 	data[i] = theVec(i);
-      }
-
-      if (OPS_SetDoubleOutput(&nbf, &data[0], false) < 0) {
-	opserr << "WARNING failed to set output\n";
-	delete theResponse;
-	return -1;
-      }
     }
-    // Scalar
-    else {
-      int nbf = 1;
-      double data = info.theDouble;
-      if (OPS_SetDoubleOutput(&nbf, &data, false) < 0) {
+
+    if (OPS_SetDoubleOutput(&nbf, &data[0], false) < 0) {
 	opserr << "WARNING failed to set output\n";
 	delete theResponse;
 	return -1;
-      }      
     }
 
     delete theResponse;
@@ -2994,7 +2713,7 @@ int OPS_basicStiffness()
     int tag;
 
     if (OPS_GetIntInput(&numdata, &tag) < 0) {
-	opserr << "WARNING basicStiffness eleTag? - could not read eleTag? \n";
+	opserr << "WARNING basicStiffness eleTag? dofNum? - could not read eleTag? \n";
 	return -1;
     }
 
@@ -3022,44 +2741,32 @@ int OPS_basicStiffness()
     theResponse->getResponse();
     Information &info = theResponse->getInformation();
 
-    // Matrix
-    if (info.theMatrix != 0) {
-      const Matrix &theMatrix = *(info.theMatrix);
-      int nbf = theMatrix.noCols();
+    const Matrix &theMatrix = *(info.theMatrix);
+    int nbf = theMatrix.noCols();
 
-      std::vector<double> values;
-      int size = nbf*nbf;
-      if (size == 0) {
+    std::vector<double> values;
+    int size = nbf*nbf;
+    if (size == 0) {
         if (OPS_SetDoubleOutput(&size, 0, false) < 0) {
-	  opserr << "WARNING failed to set output\n";
-	  delete theResponse;
-	  return -1;
+            opserr << "WARNING failed to set output\n";
+            delete theResponse;
+            return -1;
         }
         return 0;
-      }
-      values.reserve(size);
-      
-      for (int i = 0; i < nbf; i++) {
-	for (int j = 0; j < nbf; j++) {
-	  values.push_back(theMatrix(i,j));
-	}
-      }
-
-      if (OPS_SetDoubleOutput(&size, &values[0], false) < 0) {
-	opserr << "WARNING failed to set output\n";
-	delete theResponse;
-	return -1;
-      }
     }
-    // Scalar
-    else {
-      int nbf = 1;
-      double data = info.theDouble;
-      if (OPS_SetDoubleOutput(&nbf, &data, false) < 0) {
+    values.reserve(size);
+
+
+    for (int i = 0; i < nbf; i++) {
+	for (int j = 0; j < nbf; j++) {
+	    values.push_back(theMatrix(i,j));
+	}
+    }
+
+    if (OPS_SetDoubleOutput(&size, &values[0], false) < 0) {
 	opserr << "WARNING failed to set output\n";
 	delete theResponse;
 	return -1;
-      }      
     }
 
     delete theResponse;
@@ -3426,386 +3133,6 @@ int OPS_sensNodePressure()
 	opserr<<"WARNING failed to set output\n";
 	return -1;
     }
-
-    return 0;
-}
-
-int OPS_getEleClassTags()
-{
-    Domain* theDomain = OPS_GetDomain();
-    if (theDomain == 0) return -1;
-
-    int numdata = OPS_GetNumRemainingInputArgs();
-
-	std::vector <int> data;
-
-	// all element tags
-    if (numdata < 1) {
-	  Element *theEle;
-	  ElementIter &theEles = theDomain->getElements();
-
-	  while ((theEle = theEles()) != 0) {
-		data.push_back(theEle->getClassTag());
-	  }
-
-	  // specific element tag
-    } else if (numdata == 1) {
-	  int eleTag;
-
-	  if (OPS_GetIntInput(&numdata, &eleTag) < 0) {
-		opserr << "could not read eleTag\n";
-		return -1;
-	  }
-
-	  Element *theEle = theDomain->getElement(eleTag);
-
-	  data.push_back(theEle->getClassTag());
-
-	} else {
-	  opserr << "WARNING want - getEleClassTags <eleTag?>\n";
-	  return -1;
-    }
-
-	int size = data.size();
-
-	if (OPS_SetIntOutput(&size, data.data(), false) < 0) {
-	  opserr << "WARNING failed to set output\n";
-	  return -1;
-	}
-
-    return 0;
-}
-
-int OPS_getEleLoadClassTags()
-{
-    Domain* theDomain = OPS_GetDomain();
-    if (theDomain == 0) return -1;
-
-    int numdata = OPS_GetNumRemainingInputArgs();
-
-	std::vector <int> data;
-
-    if (numdata < 1) {
-	  LoadPattern *thePattern;
-	  LoadPatternIter &thePatterns = theDomain->getLoadPatterns();
-
-	  while ((thePattern = thePatterns()) != 0) {
-		ElementalLoadIter theEleLoads = thePattern->getElementalLoads();
-		ElementalLoad* theLoad;
-
-		while ((theLoad = theEleLoads()) != 0) {
-		  data.push_back(theLoad->getClassTag());
-		}
-
-	  }
-
-	} else if (numdata == 1) {
-
-	  int patternTag;
-	  if (OPS_GetIntInput(&numdata, &patternTag) < 0) {
-		opserr << "could not read patternTag\n";
-		return -1;
-	  }
-
-	  LoadPattern *thePattern = theDomain->getLoadPattern(patternTag);
-	  if (thePattern == nullptr) {
-		opserr << "ERROR load pattern with tag " << patternTag << " not found in domain -- getEleLoadClassTags\n";
-		return -1;
-	  }
-	  ElementalLoadIter theEleLoads = thePattern->getElementalLoads();
-	  ElementalLoad* theLoad;
-
-	  while ((theLoad = theEleLoads()) != 0) {
-		data.push_back(theLoad->getClassTag());
-	  }
-
-	} else {
-	opserr << "WARNING want - getEleLoadClassTags <patternTag?>\n";
-	return -1;
-    }
-
-
-	int size = data.size();
-
-	if (OPS_SetIntOutput(&size, data.data(), false) < 0) {
-	  opserr << "WARNING failed to set output\n";
-	  return -1;
-	}
-
-    return 0;
-}
-
-int OPS_getEleLoadTags()
-{
-    Domain* theDomain = OPS_GetDomain();
-    if (theDomain == 0) return -1;
-
-    int numdata = OPS_GetNumRemainingInputArgs();
-
-	std::vector <int> data;
-
-    if (numdata < 1) {
-	  LoadPattern *thePattern;
-	  LoadPatternIter &thePatterns = theDomain->getLoadPatterns();
-
-	  while ((thePattern = thePatterns()) != 0) {
-		ElementalLoadIter theEleLoads = thePattern->getElementalLoads();
-		ElementalLoad* theLoad;
-
-		while ((theLoad = theEleLoads()) != 0) {
-		  data.push_back(theLoad->getElementTag());
-		}
-
-	  }
-
-	} else if (numdata == 1) {
-
-	  int patternTag;
-	  if (OPS_GetIntInput(&numdata, &patternTag) < 0) {
-		opserr << "could not read patternTag\n";
-		return -1;
-	  }
-
-	  LoadPattern* thePattern = theDomain->getLoadPattern(patternTag);
-	  if (thePattern == nullptr) {
-		opserr << "ERROR load pattern with tag " << patternTag << " not found in domain -- getEleLoadTags\n";
-		return -1;
-	  }
-	  ElementalLoadIter& theEleLoads = thePattern->getElementalLoads();
-	  ElementalLoad* theLoad;
-
-	  while ((theLoad = theEleLoads()) != 0) {
-		data.push_back(theLoad->getElementTag());
-	  }
-
-	} else {
-	opserr << "WARNING want - getEleLoadTags <patternTag?>\n";
-	return -1;
-    }
-
-	int size = data.size();
-
-	if (OPS_SetIntOutput(&size, data.data(), false) < 0) {
-	  opserr << "WARNING failed to set output\n";
-	  return -1;
-	}
-
-    return 0;
-}
-
-int OPS_getEleLoadData()
-{
-    Domain* theDomain = OPS_GetDomain();
-    if (theDomain == 0) return -1;
-
-    int numdata = OPS_GetNumRemainingInputArgs();
-
-	std::vector <double> data;
-
-    if (numdata < 1) {
-	  LoadPattern *thePattern;
-	  LoadPatternIter &thePatterns = theDomain->getLoadPatterns();
-
-	  int typeEL;
-
-	  while ((thePattern = thePatterns()) != 0) {
-		ElementalLoadIter &theEleLoads = thePattern->getElementalLoads();
-		ElementalLoad* theLoad;
-
-		while ((theLoad = theEleLoads()) != 0) {
-		  const Vector &eleLoadData = theLoad->getData(typeEL, 1.0);
-
-		  int eleLoadDataSize = eleLoadData.Size();
-		  for (int i = 0; i < eleLoadDataSize; i++) {
-			data.push_back(eleLoadData(i));
-		  }
-		}
-	  }
-
-	} else if (numdata == 1) {
-
-	  int patternTag;
-	  if (OPS_GetIntInput(&numdata, &patternTag) < 0) {
-		opserr << "could not read patternTag\n";
-		return -1;
-	  }
-
-	  LoadPattern* thePattern = theDomain->getLoadPattern(patternTag);
-	  if (thePattern == nullptr) {
-		opserr << "ERROR load pattern with tag " << patternTag << " not found in domain -- getEleLoadData\n";
-		return -1;
-	  }
-	  ElementalLoadIter& theEleLoads = thePattern->getElementalLoads();
-	  ElementalLoad* theLoad;
-
-	  int typeEL;
-
-	  while ((theLoad = theEleLoads()) != 0) {
-		const Vector &eleLoadData = theLoad->getData(typeEL, 1.0);
-
-		int eleLoadDataSize = eleLoadData.Size();
-		for (int i = 0; i < eleLoadDataSize; i++) {
-		  data.push_back(eleLoadData(i));
-		}
-	  }
-
-	} else {
-	opserr << "WARNING want - getEleLoadData <patternTag?>\n";
-	return -1;
-    }
-
-	int size = data.size();
-
-	if (OPS_SetDoubleOutput(&size, data.data(), false) < 0) {
-	  opserr << "WARNING failed to set output\n";
-	  return -1;
-	}
-
-    return 0;
-}
-
-int OPS_getNodeLoadTags()
-{
-    Domain* theDomain = OPS_GetDomain();
-    if (theDomain == 0) return -1;
-
-    int numdata = OPS_GetNumRemainingInputArgs();
-
-	std::vector <int> data;
-
-    if (numdata < 1) {
-	  LoadPattern *thePattern;
-	  LoadPatternIter &thePatterns = theDomain->getLoadPatterns();
-
-	  while ((thePattern = thePatterns()) != 0) {
-		NodalLoadIter theNodLoads = thePattern->getNodalLoads();
-		NodalLoad* theNodLoad;
-
-		while ((theNodLoad = theNodLoads()) != 0) {
-		  data.push_back(theNodLoad->getNodeTag());
-		}
-
-	  }
-
-	} else if (numdata == 1) {
-
-	  int patternTag;
-	  if (OPS_GetIntInput(&numdata, &patternTag) < 0) {
-		opserr << "could not read patternTag\n";
-		return -1;
-	  }
-
-	  LoadPattern* thePattern = theDomain->getLoadPattern(patternTag);
-	  if (thePattern == nullptr) {
-		opserr << "ERROR load pattern with tag " << patternTag << " not found in domain -- getEleLoadTags\n";
-		return -1;
-	  }
-	  NodalLoadIter& theNodLoads = thePattern->getNodalLoads();
-	  NodalLoad* theNodLoad;
-
-	  while ((theNodLoad = theNodLoads()) != 0) {
-		data.push_back(theNodLoad->getNodeTag());
-	  }
-
-	} else {
-	opserr << "WARNING want - getNodeLoadTags <patternTag?>\n";
-	return -1;
-    }
-
-	int size = data.size();
-
-	if (OPS_SetIntOutput(&size, data.data(), false) < 0) {
-	  opserr << "WARNING failed to set output\n";
-	  return -1;
-	}
-
-    return 0;
-}
-
-int OPS_getNodeLoadData()
-{
-    Domain* theDomain = OPS_GetDomain();
-    if (theDomain == 0) return -1;
-
-    int numdata = OPS_GetNumRemainingInputArgs();
-
-	std::vector <double> data;
-
-    if (numdata < 1) {
-	  LoadPattern *thePattern;
-	  LoadPatternIter &thePatterns = theDomain->getLoadPatterns();
-
-	  int typeEL;
-
-	  while ((thePattern = thePatterns()) != 0) {
-		NodalLoadIter &theNodLoads = thePattern->getNodalLoads();
-		NodalLoad* theNodLoad;
-
-		while ((theNodLoad = theNodLoads()) != 0) {
-		  const Vector &nodeLoadData = theNodLoad->getData(typeEL);
-
-		  int nodeLoadDataSize = nodeLoadData.Size();
-		  for (int i = 0; i < nodeLoadDataSize; i++) {
-			data.push_back(nodeLoadData(i));
-		  }
-		}
-	  }
-
-	} else if (numdata == 1) {
-
-	  int patternTag;
-	  if (OPS_GetIntInput(&numdata, &patternTag) < 0) {
-		opserr << "could not read patternTag\n";
-		return -1;
-	  }
-
-	  LoadPattern* thePattern = theDomain->getLoadPattern(patternTag);
-	  if (thePattern == nullptr) {
-		opserr << "ERROR load pattern with tag " << patternTag << " not found in domain -- getNodeLoadData\n";
-		return -1;
-	  }
-	  NodalLoadIter& theNodLoads = thePattern->getNodalLoads();
-	  NodalLoad* theNodLoad;
-
-	  int typeEL;
-
-	  while ((theNodLoad = theNodLoads()) != 0) {
-		const Vector &nodeLoadData = theNodLoad->getData(typeEL);
-
-		int nodeLoadDataSize = nodeLoadData.Size();
-		for (int i = 0; i < nodeLoadDataSize; i++) {
-		  data.push_back(nodeLoadData(i));
-		}
-	  }
-
-	} else {
-	opserr << "WARNING want - getNodeLoadData <patternTag?>\n";
-	return -1;
-    }
-
-	int size = data.size();
-
-	if (OPS_SetDoubleOutput(&size, data.data(), false) < 0) {
-	  opserr << "WARNING failed to set output\n";
-	  return -1;
-	}
-
-    return 0;
-}
-
-
-int OPS_getNumElements()
-{
-    Domain* theDomain = OPS_GetDomain();
-    if (theDomain == 0) return -1;
-
-	int nEles = theDomain->getNumElements();
-	int size = 1;
-
-	if (OPS_SetIntOutput(&size, &nEles, false) < 0) {
-	  opserr << "WARNING failed to set output\n";
-	  return -1;
-	}
 
     return 0;
 }

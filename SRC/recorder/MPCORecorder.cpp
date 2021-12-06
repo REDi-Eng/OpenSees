@@ -38,20 +38,23 @@ in STKO components are assumed all different!
 // some definitions
 
 /* 
-loads hdf5 shared library at runtime. if uncommented, hdf5 will be linked statically.
+loads hdf5 shared library at runtime. if uncommented, hdf5 will be linked dynamically.
+If uncommeted, then you need to define the macro H5_BUILT_AS_DYNAMIC_LIB to tell hdf5 that
+we want to dynamic link (shared library).
+Then we need to set the HDF5 include directory.
+And finally for the linker: hdf5 or libhdf5
+and path to HDF5 lib dir
 */
-#ifndef _HDF5
-#define MPCO_HDF5_LOADED_AT_RUNTIME
-#endif // !_HDF5 
+#define MPCO_HDF5_LOADED_AT_RUNTIME 
 
 /* if hdf5 is loaded at runtime, this macro makes the process of loading hdf5 verbose */
 #define MPCO_LIBLOADER_VERBOSE
 
 /* max number of iterations to guess the number of cross sections in elements */
-#define MPCO_MAX_TRIAL_NSEC 100
+#define MPCO_MAX_TRIAL_NSEC 1000
 
 /* max number of iterations to guess the number of fibers in cross sections */
-#define MPCO_MAX_TRIAL_NFIB 100000
+#define MPCO_MAX_TRIAL_NFIB 1000000
 
 //#define MPCO_WRITE_SECTION_IS_VERBOSE
 //#define MPCO_WRITE_LOC_AX_IS_VERBOSE
@@ -61,7 +64,7 @@ loads hdf5 shared library at runtime. if uncommented, hdf5 will be linked static
 enables SWMR (Single Writer - Multiple Readers) to allow reading this database from multiple processes
 while opensees is writing data. Warning: this is a new feature in hdf5 version 1.10.0.
 */
-//#define MPCO_USE_SWMR
+#define MPCO_USE_SWMR
 
 // opensees
 #include "MPCORecorder.h"
@@ -162,19 +165,19 @@ typedef int64_t hid_t;
 typedef int herr_t;
 typedef unsigned long long 	hsize_t;
 typedef int H5T_str_t; // enum (int) in hdf5
-typedef int H5F_libver_t; // enum (int) in hdf5
-typedef int H5F_scope_t; // enum (int) in hdf5
+typedef unsigned int H5F_libver_t; // enum (uint) in hdf5
+typedef unsigned int H5F_scope_t; // enum (uint) in hdf5
 
 /*
 HDF5 version info
 */
 
 #define H5_VERS_MAJOR	1	/* For major interface/format changes  	     */
-#define H5_VERS_MINOR	12	/* For minor interface/format changes  	     */
-#define H5_VERS_RELEASE	0	/* For tweaks, bug-fixes, or development     */
+#define H5_VERS_MINOR	10	/* For minor interface/format changes  	     */
+#define H5_VERS_RELEASE	1	/* For tweaks, bug-fixes, or development     */
 #define H5_VERS_SUBRELEASE ""	/* For pre-releases like snap0       */
                               /* Empty string for real releases.           */
-#define H5_VERS_INFO    "HDF5 library version: 1.12.0"      /* Full version string */
+#define H5_VERS_INFO    "HDF5 library version: 1.10.1"      /* Full version string */
 
 /*
 cout wrapper for library loader verbosity
@@ -3064,7 +3067,6 @@ namespace mpco {
 				, descr(_d)
 				, current_level(0)
 				, pending_close_tag(false)
-				, is_valid(true)
 			{}
 			~OutputDescriptorStream() {}
 
@@ -3124,14 +3126,6 @@ namespace mpco {
 						mpco::element::OutputDescriptor *eo_new_curr_lev = new mpco::element::OutputDescriptor();
 						eo_new_curr_lev->type = mpco::ElementOutputDescriptorType::Material;
 						ensureItemsOfUniformType(eo_curr_lev, eo_new_curr_lev);
-						if (eo_curr_lev->items.size() > 0) {
-							// multiple materials cannot be children of same gauss/fiber point. this happens when
-							// an objects opens the tag, fails in getting response, and falls back to base class implementation,
-							// which opens again the same tag
-							for (mpco::element::OutputDescriptor* sub_item : eo_curr_lev->items)
-								delete sub_item;
-							eo_curr_lev->items.clear();
-						}
 						eo_curr_lev->items.push_back(eo_new_curr_lev);
 						current_level++;
 					}
@@ -3148,14 +3142,6 @@ namespace mpco {
 						mpco::element::OutputDescriptor *eo_new_curr_lev = new mpco::element::OutputDescriptor();
 						eo_new_curr_lev->type = mpco::ElementOutputDescriptorType::Section;
 						ensureItemsOfUniformType(eo_curr_lev, eo_new_curr_lev);
-						if (eo_curr_lev->items.size() > 0) {
-							// multiple sections cannot be children of same gauss point. this happens when
-							// an objects opens the tag, fails in getting response, and falls back to base class implementation,
-							// which opens again the same tag
-							for (mpco::element::OutputDescriptor* sub_item : eo_curr_lev->items) 
-								delete sub_item;
-							eo_curr_lev->items.clear();
-						}
 						eo_curr_lev->items.push_back(eo_new_curr_lev);
 						current_level++;
 					}
@@ -3329,14 +3315,11 @@ namespace mpco {
 			void ensureItemsOfUniformType(mpco::element::OutputDescriptor *parent, mpco::element::OutputDescriptor *child) {
 				if (parent->items.size() > 0) {
 					if (child->type != parent->items.back()->type) {
-						/*opserr << "MPCORecorder Error: (mpco::element::OutputDescriptor) "
+						opserr << "MPCORecorder Error: (mpco::element::OutputDescriptor) "
 							"Responses at the same level of the response tree must be of the same type.\n"
 							"Expected: " << mpco::ElementOutputDescriptorType::toString(parent->items.back()->type)
 							<< ", given: " << mpco::ElementOutputDescriptorType::toString(child->type) << "\n";
-						exit(-1);*/
-						// M.Petracca - due to a recent commit (08/10/2021)
-						// this one can be converted from a fatal error to a silent-skip...
-						is_valid = false;
+						exit(-1);
 					}
 				}
 			}
@@ -3345,7 +3328,6 @@ namespace mpco {
 			mpco::element::OutputDescriptor *descr;
 			int current_level;
 			bool pending_close_tag;
-			bool is_valid;
 		};
 
 		class OutputResponse
@@ -3553,14 +3535,13 @@ namespace mpco {
 					get class tag, geometry and integration rule type
 					*/
 					int elem_type = current_element->getClassTag();
-					/*
-					skip element classes tht we don't want to record
-					*/
-					if (elem_type == ELE_TAG_Subdomain ||
-						elem_type == ELE_TAG_ASDEmbeddedNodeElement)
+
+					if (elem_type == ELE_TAG_Subdomain)
 					{
+						//Skip subdomains
 						continue;
 					}
+
 					ElementGeometryType::Enum geom_type;
 					ElementIntegrationRuleType::Enum int_rule_type;
 					getGeometryAndIntRuleByClassTag(elem_type, geom_type, int_rule_type);
@@ -3658,7 +3639,6 @@ namespace mpco {
 					elem_class_tag == ELE_TAG_CorotTruss ||
 					elem_class_tag == ELE_TAG_CorotTruss2 ||
 					elem_class_tag == ELE_TAG_CorotTrussSection ||
-					elem_class_tag == ELE_TAG_InertiaTruss ||
 					// ./zeroLength
 					elem_class_tag == ELE_TAG_ZeroLength ||
 					elem_class_tag == ELE_TAG_ZeroLengthSection ||
@@ -3667,7 +3647,6 @@ namespace mpco {
 					elem_class_tag == ELE_TAG_ZeroLengthRocking ||
 					elem_class_tag == ELE_TAG_ZeroLengthContact2D ||
 					elem_class_tag == ELE_TAG_ZeroLengthContact3D ||
-					elem_class_tag == ELE_TAG_ZeroLengthContactASDimplex ||
 					elem_class_tag == ELE_Tag_ZeroLengthImpact3D ||
 					// ./elasticBeamColumn
 					elem_class_tag == ELE_TAG_ElasticBeam2d ||
@@ -3757,9 +3736,7 @@ namespace mpco {
 				else if (
 					// ./UWelements
 					elem_class_tag == ELE_TAG_SSPquad ||
-					elem_class_tag == ELE_TAG_SSPquadUP ||
-					// ./absorbentBoundaries
-					elem_class_tag == ELE_TAG_ASDAbsorbingBoundary2D
+					elem_class_tag == ELE_TAG_SSPquadUP
 					)
 				{
 					geom_type = ElementGeometryType::Quadrilateral_4N;
@@ -3820,9 +3797,7 @@ namespace mpco {
 				else if (
 					// ./UWelements
 					elem_class_tag == ELE_TAG_SSPbrick ||
-					elem_class_tag == ELE_TAG_SSPbrickUP ||
-					// ./absorbentBoundaries
-					elem_class_tag == ELE_TAG_ASDAbsorbingBoundary3D
+					elem_class_tag == ELE_TAG_SSPbrickUP
 					)
 				{
 					geom_type = ElementGeometryType::Hexahedron_8N;
@@ -3899,6 +3874,7 @@ namespace mpco {
 										x_max = ieta;
 								}
 								double span = x_max - x_min;
+								//elem->getNodePtrs(); // HERE
 								if (span == 0.0) {
 									rule.x.resize((size_t)data.Size(), 0.0);
 								}
@@ -5133,17 +5109,6 @@ int MPCORecorder::writeSections()
 					argv[0] = request1.c_str();
 					argv[2] = request2.c_str();
 					argv[4] = request3.c_str();
-					// prepare also an alternative request for the case of section aggregators.
-					// 23/11/2021 due to a recent clean up of the setResponse method of the sectionAggregator
-					// the results of the underlying fiber section must be requested with an extra "section" keyword
-					int woagg_agrc = 6;
-					const char** woagg_argv = new const char* [woagg_agrc];
-					woagg_argv[0] = request1.c_str(); // 0: section
-					// 1: section id
-					woagg_argv[2] = request1.c_str(); // 2: section inside aggregator
-					woagg_argv[3] = request2.c_str(); // 3: fiber
-					// 4: fiber id
-					woagg_argv[5] = request3.c_str(); // 5: stress
 					/*
 					fiber section data for each gauss point
 					*/
@@ -5169,14 +5134,12 @@ int MPCORecorder::writeSections()
 						std::stringstream ss_trial_num_sec; ss_trial_num_sec << trial_num_sec;
 						std::string s_trial_num_sec = ss_trial_num_sec.str();
 						argv[1] = s_trial_num_sec.c_str();
-						woagg_argv[1] = s_trial_num_sec.c_str();
 						/*
 						for each fiber
 						*/
 						int trial_num_fib = -1; /* note: in setResponse fiber index is 0-based */
 						bool break_sec_loop = false;
 						bool first_fiber_done = false;
-						bool do_workaround_for_aggregator = false;
 						while (true) {
 							trial_num_fib++;
 							if (trial_num_fib > MPCO_MAX_TRIAL_NFIB) {
@@ -5187,15 +5150,12 @@ int MPCORecorder::writeSections()
 							std::stringstream ss_trial_num_fib; ss_trial_num_fib << trial_num_fib;
 							std::string s_trial_num_fib = ss_trial_num_fib.str();
 							argv[3] = s_trial_num_fib.c_str();
-							woagg_argv[4] = s_trial_num_fib.c_str();
 							/*
 							get the element response for the ith section and the ith fiber
 							*/
 							mpco::element::OutputDescriptor eo_descriptor;
 							mpco::element::OutputDescriptorStream eo_stream(&eo_descriptor);
-							Response *eo_response = do_workaround_for_aggregator ?
-								elem->setResponse(woagg_argv, woagg_agrc, eo_stream) :
-								elem->setResponse(argv, argc, eo_stream);
+							Response *eo_response = elem->setResponse(argv, argc, eo_stream);
 							eo_stream.finalizeSetResponse();
 							if (eo_response)
 								delete eo_response; // we dont need it now
@@ -5298,31 +5258,6 @@ int MPCORecorder::writeSections()
 #ifdef MPCO_WRITE_SECTION_IS_VERBOSE
 								std::cout << "MPCORecorder: exiting fiber loop. iter = " << trial_num_fib << "\n";
 #endif // MPCO_WRITE_SECTION_IS_VERBOSE
-								/*
-								this condition can trigger the workaround for sectionAggregator if we
-								are not doing it already.
-								trial_num_fib should be = 1, due to the 1-based workaround for shell sections
-								*/
-								if (!do_workaround_for_aggregator && (trial_num_fib == 1)) {
-									do_workaround_for_aggregator = true;
-									// remove data set in previous if-block
-									if (first_fiber_done) {
-										elem_gauss_id.pop_back();
-										elem_sec_id.pop_back();
-										elem_dummy_sec_flags.pop_back();
-										elem_sections.pop_back();
-										elem_fiber_base_index.pop_back();
-									}
-									// reset data and continue to simulate a new while loop
-									trial_num_fib = -1;
-									break_sec_loop = false;
-									first_fiber_done = false;
-#ifdef MPCO_WRITE_SECTION_IS_VERBOSE
-									std::cout << "MPCORecorder: begin workaround for sectionAggregator\n";
-#endif // MPCO_WRITE_SECTION_IS_VERBOSE
-									continue;
-								}
-								// break the fiber loop
 								break;
 							}
 							/*
@@ -5366,7 +5301,6 @@ int MPCORecorder::writeSections()
 					free argv
 					*/
 					delete[] argv;
-					delete[] woagg_argv;
 					/*
 					fiber section data for each gauss point has been obtained
 					*/
@@ -5988,7 +5922,7 @@ int MPCORecorder::initElementRecorders()
 						if (do_all_fibers) {
 							eo_descriptor.purge();
 						}
-						if (eo_response && eo_stream.is_valid) {
+						if (eo_response) {
 							/*
 							get (or create and get) the list of MPCORecorder_ElementResultRecorder mapped to this descriptor
 							and add the new element-response pair

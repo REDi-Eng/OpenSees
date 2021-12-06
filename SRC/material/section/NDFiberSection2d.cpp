@@ -1042,20 +1042,9 @@ Response*
 NDFiberSection2d::setResponse(const char **argv, int argc,
 			      OPS_Stream &output)
 {
-  Response *theResponse = 0;
+  Response *theResponse =0;
 
-  if (argc > 2 && strcmp(argv[0],"fiber") == 0) {
-
-    static double fiberLocs[10000];
-    
-    if (sectionIntegr != 0) {
-      sectionIntegr->getFiberLocations(numFibers, fiberLocs);
-    }  
-    else {
-      for (int i = 0; i < numFibers; i++) {
-	fiberLocs[i] = matData[2*i];
-      }
-    }
+  if (argc > 2 || strcmp(argv[0],"fiber") == 0) {
     
     int key = numFibers;
     int passarg = 2;
@@ -1076,10 +1065,9 @@ NDFiberSection2d::setResponse(const char **argv, int argc,
       // Find first fiber with specified material tag
       for (j = 0; j < numFibers; j++) {
 	if (matTag == theMaterials[j]->getTag()) {
-	  //ySearch = matData[2*j];
-	  ySearch = fiberLocs[j];
+	  ySearch = matData[2*j];
 	  dy = ySearch-yCoord;
-	  closestDist = dy*dy;
+	  closestDist = fabs(dy);
 	  key = j;
 	  break;
 	}
@@ -1087,10 +1075,9 @@ NDFiberSection2d::setResponse(const char **argv, int argc,
       // Search the remaining fibers
       for ( ; j < numFibers; j++) {
 	if (matTag == theMaterials[j]->getTag()) {
-	  //ySearch = matData[2*j];
-	  ySearch = fiberLocs[j];
+	  ySearch = matData[2*j];
 	  dy = ySearch-yCoord;
-	  distance = dy*dy;
+	  distance = fabs(dy);
 	  if (distance < closestDist) {
 	    closestDist = distance;
 	    key = j;
@@ -1107,17 +1094,15 @@ NDFiberSection2d::setResponse(const char **argv, int argc,
       double ySearch, dy;
       double distance;
       
-      //ySearch = matData[0];
-      ySearch = fiberLocs[0];      
+      ySearch = matData[0];
       dy = ySearch-yCoord;
       closestDist = fabs(dy);
       key = 0;
       for (int j = 1; j < numFibers; j++) {
-	//ySearch = matData[2*j];
-	ySearch = fiberLocs[j];	  		
+	ySearch = matData[2*j];
 	dy = ySearch-yCoord;
 	
-	distance = dy*dy;
+	distance = fabs(dy);
 	if (distance < closestDist) {
 	  closestDist = distance;
 	  key = j;
@@ -1132,17 +1117,16 @@ NDFiberSection2d::setResponse(const char **argv, int argc,
       output.attr("zLoc",0.0);
       output.attr("area",matData[2*key+1]);
       
-      theResponse = theMaterials[key]->setResponse(&argv[passarg], argc-passarg, output);
+      theResponse =  theMaterials[key]->setResponse(&argv[passarg], argc-passarg, output);
       
       output.endTag();
     }
 
+    return theResponse;
   }
 
-  if (theResponse == 0)
-    return SectionForceDeformation::setResponse(argv, argc, output);
-
-  return theResponse;
+  // If not a fiber response, call the base class method
+  return SectionForceDeformation::setResponse(argv, argc, output);
 }
 
 

@@ -68,14 +68,14 @@ void* OPS_ENTMaterial()
 
 ENTMaterial::ENTMaterial(int tag, double e, double A, double B)
   :UniaxialMaterial(tag,MAT_TAG_ENTMaterial),
-   E(e), commitStrain(0.0), trialStrain(0.0), parameterID(0),a(A), b(B)
+   E(e), trialStrain(0.0), parameterID(0),a(A), b(B)
 {
 
 }
 
 ENTMaterial::ENTMaterial()
 :UniaxialMaterial(0,MAT_TAG_ENTMaterial),
- E(0.0), commitStrain(0.0), trialStrain(0.0), parameterID(0), a(0.0), b(1.0)
+ E(0.0), trialStrain(0.0), parameterID(0)
 {
 
 }
@@ -124,24 +124,20 @@ ENTMaterial::getTangent(void)
 
 int 
 ENTMaterial::commitState(void)
-{   
-    commitStrain = trialStrain;
+{
     return 0;
 }
 
 int 
 ENTMaterial::revertToLastCommit(void)
 {
-    trialStrain = commitStrain;
     return 0;
 }
 
 int 
 ENTMaterial::revertToStart(void)
 {
-    commitStrain = 0.;
-    trialStrain = 0.;
-    return 0;
+  return 0;
 }
 
 UniaxialMaterial *
@@ -157,14 +153,9 @@ int
 ENTMaterial::sendSelf(int cTag, Channel &theChannel)
 {
   int res = 0;
-
-  static Vector data(5);
+  static Vector data(2);
   data(0) = this->getTag();
   data(1) = E;
-  data(2) = a;
-  data(3) = b;
-  data(4) = commitStrain;
-
   res = theChannel.sendVector(this->getDbTag(), cTag, data);
   if (res < 0) 
     opserr << "ENTMaterial::sendSelf() - failed to send data\n";
@@ -177,24 +168,17 @@ ENTMaterial::recvSelf(int cTag, Channel &theChannel,
 			       FEM_ObjectBroker &theBroker)
 {
   int res = 0;
-  static Vector data(5);
+  static Vector data(2);
   res = theChannel.recvVector(this->getDbTag(), cTag, data);
   
   if (res < 0) {
       opserr << "ENTMaterial::recvSelf() - failed to receive data\n";
-      E = 0;
-      a = 0;
-      b = 0;
-      commitStrain = 0;
-      this->setTag(0);
+      E = 0; 
+      this->setTag(0);      
   }
   else {
     this->setTag((int)data(0));
     E = data(1);
-    a = data(2);
-    b = data(3);
-    commitStrain = data(4);
-    trialStrain = commitStrain;
   }
     
   return res;

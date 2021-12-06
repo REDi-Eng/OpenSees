@@ -53,8 +53,6 @@ class SSPquad : public Element
     SSPquad();
     ~SSPquad();
 
-	const char* getClassType()  const { return "SSPquad"; };
-
     // public methods to obtain information about dof and connectivity
     int getNumExternalNodes(void) const; 
     const ID &getExternalNodes(void);
@@ -93,9 +91,8 @@ class SSPquad : public Element
     int updateParameter(int parameterID, Information &info);
 
 	// allow PyLiq1 and TzLiq1 classes to get stresses from SSPquadUP class
-    friend class PyLiq1;
-    friend class TzLiq1;
-    friend class QzLiq1; // Sumeet
+	friend class PyLiq1;
+	friend class TzLiq1;
 
   protected:
 

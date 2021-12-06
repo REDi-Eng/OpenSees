@@ -433,7 +433,7 @@ FileStream::operator<<(int n)
     this->open();
 
   if (fileOpen != 0)
-    theFile << n;
+    theFile << 1.0*n;
 
   return *this;
 }

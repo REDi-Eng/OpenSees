@@ -14,7 +14,6 @@
 
 #include <PyLiq1.h>
 #include <TzLiq1.h>
-#include <QzLiq1.h>
 
 #include <string.h>
 

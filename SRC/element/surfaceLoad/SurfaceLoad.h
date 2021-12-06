@@ -90,7 +90,7 @@ class SurfaceLoad : public Element
 
     void Print(OPS_Stream &s, int flag =0);    
 
-    Response *setResponse(const char **argv, int argc, OPS_Stream &output);
+    Response *setResponse(const char **argv, int argc, Information &eleInfo);
     int getResponse(int responseID, Information &eleInformation);
 
   protected:

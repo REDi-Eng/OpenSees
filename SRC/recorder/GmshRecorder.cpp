@@ -1273,7 +1273,6 @@ GmshRecorder::setGMSHType()
     gmshtypes[ELE_TAG_ZeroLengthND] = GMSH_LINE;
     gmshtypes[ELE_TAG_ZeroLengthContact2D] = GMSH_LINE;
     gmshtypes[ELE_TAG_ZeroLengthContact3D] = GMSH_LINE;
-    gmshtypes[ELE_TAG_ZeroLengthContactASDimplex] = GMSH_LINE;
     gmshtypes[ELE_TAG_ZeroLengthContactNTS2D] = GMSH_LINE;
     gmshtypes[ELE_TAG_ZeroLengthInterface2D] = GMSH_LINE;
     gmshtypes[ELE_TAG_CoupledZeroLength] = GMSH_LINE;
@@ -1432,7 +1431,4 @@ GmshRecorder::setGMSHType()
     gmshtypes[ELE_TAG_ShellANDeS] = GMSH_TRIANGLE;
     gmshtypes[ELE_TAG_ShellDKGT] = GMSH_TRIANGLE;
     gmshtypes[ELE_TAG_ShellNLDKGT] = GMSH_TRIANGLE;
-    gmshtypes[ELE_TAG_InertiaTruss] = GMSH_LINE;
-    gmshtypes[ELE_TAG_ASDAbsorbingBoundary2D] = GMSH_QUAD;
-    gmshtypes[ELE_TAG_ASDAbsorbingBoundary3D] = GMSH_HEXAHEDRON;
 }

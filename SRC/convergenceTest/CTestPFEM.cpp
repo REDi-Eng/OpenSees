@@ -153,6 +153,7 @@ int CTestPFEM::test(void)
     const Vector &x = theSOE->getX();
     const Vector &B = theSOE->getB();
     const ID& dofType = theSOE->getDofType();
+    int stage = theSOE->getStage();
     if(dofType.Size() != x.Size()) {
         opserr << "WARNING: x and dofType have different size -- CTestPFEM::test()\n";
         return -2;
@@ -226,6 +227,18 @@ int CTestPFEM::test(void)
         normprel = 0.0;
     }
 
+    if (stage==1 || stage==3) {
+        normp = 0;
+        normresp = 0;
+        normprel = 0;
+        normpi = 0;
+        normrespi = 0;
+    } else if (stage == 2) {
+        normv = 0;
+        normresv = 0;
+        normvrel = 0;
+    }
+
     // record norms
     if(currentIter <= maxNumIter) {
         normsv.push_back(normv);
@@ -235,7 +248,7 @@ int CTestPFEM::test(void)
     }
     
     // check for norm increase
-    if(currentIter > 1 && maxIncr > 0) {
+    if(stage==0 && currentIter > 1 && maxIncr > 0) {
         if(normv>10*normsv[currentIter-2] || normp>10*normsp[currentIter-2] ||
            normresv>10*normsresv[currentIter-2] || normresp>10*normsresp[currentIter-2]) {
             numIncr++;
@@ -245,6 +258,13 @@ int CTestPFEM::test(void)
     // print the data if required
     if(printFlag == 1) {
         opserr << "PFEM: " << currentIter;
+        if (stage == 1) {
+            opserr << " -- Predictor Stage\n";
+        } else if (stage == 2) {
+            opserr << " -- Pressure Stage\n";
+        } else if (stage == 3) {
+            opserr << " -- Corrector Stage\n";
+        }
         opserr << " dV(" << normv << "," << normvrel;
         opserr << "), dP(" << normp << "," << normprel;
         opserr << "), dPi(" << normpi;
@@ -283,8 +303,13 @@ int CTestPFEM::test(void)
             }
         }
 
-        // return the number of times test has been called
-        return currentIter;
+        if (stage == 1) {
+            theSOE->setStage(2);
+        } else if (stage == 0 || stage == 3) {
+
+            // return the number of times test has been called
+            return currentIter;
+        }
     }
     
     // algo failed to converged after specified number of iterations - but RETURN OK
@@ -317,6 +342,9 @@ int CTestPFEM::test(void)
     } 
     
     // algorithm not yet converged - increment counter and return -1
+    if (stage == 2) {
+        theSOE->setStage(3);
+    }
     currentIter++;
     return -1;
 }

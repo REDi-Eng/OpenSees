@@ -95,7 +95,6 @@ public:
   // stresses.
   friend class PyLiq1;
   friend class TzLiq1;
-  friend class QzLiq1; // Sumeet
 
 protected:
 private:

@@ -954,31 +954,51 @@ SectionAggregator::setResponse(const char **argv, int argc, OPS_Stream &output)
   
   Response *theResponse =0;
 
-  if (argc > 2 && (strcmp(argv[0],"addition") == 0) || (strcmp(argv[0],"material") == 0)) {
-
-    // Get the tag of the material
-    int materialTag = atoi(argv[1]);
+  if ( (strcmp(argv[0],"deformations") == 0) || (strcmp(argv[0],"deformation") == 0) || 
+	(strcmp(argv[0],"forces") == 0) || (strcmp(argv[0],"force") == 0) ||
+       (strcmp(argv[0],"forceAndDeformation") == 0)) {
     
-    // Loop to find the right material
-    int ok = 0;
-    for (int i = 0; i < numMats; i++)
-      if (materialTag == theAdditions[i]->getTag())
-	theResponse = theAdditions[i]->setResponse(&argv[2], argc-2, output);
+    return this->SectionForceDeformation::setResponse(argv, argc, output);
+  } 
+  // by SAJalali
+  int num = numMats;
+  if (theSection != 0)
+	  num++;
+  if ((strcmp(argv[0], "energy") == 0) || (strcmp(argv[0], "Energy") == 0)) {
+	  return theResponse = new MaterialResponse(this, 8, Vector(num));
   }
 
-  if ((argc > 1) && (strcmp(argv[0],"section") == 0) && (theSection))
-    theResponse = theSection->setResponse(&argv[1], argc-1, output);
 
-  if (theResponse == 0)
-    return SectionForceDeformation::setResponse(argv, argc, output);
-  
-  return theResponse;
+  if (theSection != 0)
+    return theSection->setResponse(argv, argc, output);
+  else 
+    return this->SectionForceDeformation::setResponse(argv, argc, output);
+
+  return 0;
 }
 
+//by SAJalali
 int
 SectionAggregator::getResponse(int responseID, Information &sectInfo)
 {
-  return SectionForceDeformation::getResponse(responseID, sectInfo);
+	FiberSection2d* sec = 0;
+	int num = numMats;
+	if (theSection != 0)
+		num++;
+	Vector res(num);
+	if (responseID == 8) {
+		for (int i = 0; i < numMats; i++)
+			res(i) = theAdditions[i]->getEnergy();
+		sec = (FiberSection2d*)theSection;
+		if (sec != 0)
+			res(numMats) = sec->getEnergy();
+		sectInfo.setVector(res);
+		//opserr << "energyVect=" << res << "\n";
+	}
+	else
+		return SectionForceDeformation::getResponse(responseID, sectInfo);
+
+	return 0;
 }
 
 

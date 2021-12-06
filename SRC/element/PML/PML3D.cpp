@@ -391,7 +391,7 @@ PML3D::update(void)
 	int MCRD = 3;
 	int NNODE = 8;
 
-	pml3d_(M,
+	pml_(M,
 		C,
 		K,
 		&NDOFEL,

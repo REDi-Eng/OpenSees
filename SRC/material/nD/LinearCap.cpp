@@ -315,7 +315,7 @@ int LinearCap::recvSelf(int commitTag, Channel &theChannel,
 		   FEM_ObjectBroker &theBroker )  {return 0;};
 
 
-Response * LinearCap::setResponse (const char **argv, int argc, OPS_Stream &output)  {
+Response * LinearCap::setResponse (const char **argv, int argc, OPS_Stream &matInformation)  {
 
   if (strcmp(argv[0],"stress") == 0 || strcmp(argv[0],"stresses") == 0)
 		return new MaterialResponse(this, 1, stress);
@@ -331,7 +331,7 @@ Response * LinearCap::setResponse (const char **argv, int argc, OPS_Stream &outp
 		return new MaterialResponse(this, 4, plastStrain);
 
  	
-  return NDMaterial::setResponse(argv, argc, output);
+		return 0;
 	
 
 };
@@ -363,7 +363,7 @@ int LinearCap::getResponse (int responseID, Information &matInfo)  {
 
 		}
 
-		return NDMaterial::getResponse(responseID, matInfo);
+	return 0;
 
 };
 

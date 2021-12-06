@@ -93,14 +93,12 @@ HyperbolicGapMaterial::HyperbolicGapMaterial(int tag, double kmax, double kur, d
     Kmax(kmax), Kur(kur), Rf(rf), Fult(fult), gap(gap0)
 {
     if (gap>=0) {
-        opserr << "HyperbolicGapMaterial::HyperbolicGapMaterial -- Initial gap size must be negative for compression-only material, setting to negative\n";
-        //exit(-1);
-	gap = -gap;
+        opserr << "HyperbolicGapMaterial::HyperbolicGapMaterial -- Initial gap size must be negative for compression-only material\n";
+        exit(-1);
     }
     if (Fult>0) {
-        opserr << "HyperbolicGapMaterial::HyperbolicGapMaterial -- Fult must be negative for compression-only material, setting to negative\n";
-        //exit(-1);
-	Fult = -Fult;
+        opserr << "HyperbolicGapMaterial::HyperbolicGapMaterial -- Fult must be negative for compression-only material\n";
+        exit(-1);
     }
     if (Kmax == 0.0) {
         opserr << "HyperbolicGapMaterial::HyperbolicGapMaterial -- Kmax is zero, continuing with Kmax = Fult/0.002\n";

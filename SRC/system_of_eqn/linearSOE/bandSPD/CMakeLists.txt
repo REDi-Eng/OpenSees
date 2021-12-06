@@ -1,21 +1,16 @@
-#==============================================================================
-# 
-#        OpenSees -- Open System For Earthquake Engineering Simulation
-#                Pacific Earthquake Engineering Research Center
-#
-#==============================================================================
+add_library(systemOfEqn "")
 
-target_sources(OPS_SysOfEqn
+target_sources(systemOfEqn
     PRIVATE
-    BandSPDLinSOE.cpp
-    BandSPDLinSolver.cpp
-    BandSPDLinLapackSolver.cpp
-    DistributedBandSPDLinSOE.cpp
+	BandSPDLinSOE.cpp
+	BandSPDLinSolver.cpp
+	BandSPDLinLapackSolver.cpp
+	DistributedBandSPDLinSOE.cpp
     PUBLIC
-    BandSPDLinSOE.h
-    BandSPDLinSolver.h
-    BandSPDLinLapackSolver.h
-    DistributedBandSPDLinSOE.h
+	BandSPDLinSOE.h
+	BandSPDLinSolver.h
+	BandSPDLinLapackSolver.h
+	DistributedBandSPDLinSOE.h
 )
 
-target_include_directories(OPS_SysOfEqn PUBLIC ${CMAKE_CURRENT_LIST_DIR})
+target_include_directories(systemOfEqn PUBLIC $(CMAKE_CURRENT_LIST_DIR))

@@ -594,7 +594,7 @@ Elliptical2::getResponse(int responseID, Information &eleInformation)
     return eleInformation.setVector(theVec);
   }
   else
-    return SectionForceDeformation::getResponse(responseID, eleInformation);
+    return -1;
 }
 
 int 

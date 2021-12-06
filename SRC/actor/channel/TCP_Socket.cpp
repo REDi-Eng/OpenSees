@@ -897,8 +897,7 @@ TCP_Socket::addToProgram()
 static int
 GetHostAddr(char *host, char *IntAddr)
 {
-  //    register struct hostent *hostptr;
-  struct hostent *hostptr;
+    register struct hostent *hostptr;
 
     if ( (hostptr = gethostbyname(host)) == NULL) 
         return (-1);

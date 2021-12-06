@@ -87,6 +87,9 @@ class PFEMLinSOE : public LinearSOE
     friend class PFEMSolver_LumpM;
 
     virtual bool isFluidID(const ID& id) const;
+    virtual bool skipFluid() const;
+    virtual int getStage() const {return stage;}
+    virtual void setStage(int s) {stage = s;}
     void saveK(OPS_Stream& output);
 
 private:
@@ -99,6 +102,8 @@ private:
     cs* M, *Gft, *Git, *L, *Qt;
     Vector X, B, Mhat, Mf;
     ID dofType, dofID;
+    int assemblyFlag;
+    int stage;
 };
 
 #endif
