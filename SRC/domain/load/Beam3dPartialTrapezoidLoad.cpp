@@ -34,14 +34,14 @@ Vector Beam3dPartialTrapezoidLoad::data(8);
 
 Beam3dPartialTrapezoidLoad::Beam3dPartialTrapezoidLoad(int tag, double wya, double wza, double waa,
     double aL, double bL, double wyb, double wzb, double wab, int theElementTag)
-    :ElementalLoad(tag, LOAD_TAG_Beam3dPartialTrapezoidLoad, theElementTag),
+    :ElementalLoad(tag, LOAD_TAG_Beam3dPartialTrapezoid, theElementTag),
     wTransya(wya), wTransza(wza), wAxiala(waa), aOverL(aL), bOverL(bL), wTransyb(wyb), wTranszb(wzb), wAxialb(wab), parameterID(0)
 {
 
 }
 
 Beam3dPartialTrapezoidLoad::Beam3dPartialTrapezoidLoad()
-    :ElementalLoad(LOAD_TAG_Beam3dPartialTrapezoidLoad),
+    :ElementalLoad(LOAD_TAG_Beam3dPartialTrapezoid),
     wTransya(0.0), wTransza(0.0), wAxiala(0.0), aOverL(0.0), bOverL(0.0), wTransyb(0.0), wTranszb(0.0), wAxialb(0.0), parameterID(0)
 {
 
@@ -55,7 +55,7 @@ Beam3dPartialTrapezoidLoad::~Beam3dPartialTrapezoidLoad()
 const Vector&
 Beam3dPartialTrapezoidLoad::getData(int& type, double loadFactor)
 {
-    type = LOAD_TAG_Beam3dPartialTrapezoidLoad;
+    type = LOAD_TAG_Beam3dPartialTrapezoid;
     data(0) = wTransya;
     data(1) = wTransza;
     data(2) = wAxiala;

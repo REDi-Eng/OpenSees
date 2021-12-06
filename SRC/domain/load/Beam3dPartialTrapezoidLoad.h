@@ -35,6 +35,7 @@ class Beam3dPartialTrapezoidLoad : public ElementalLoad
 {
 public:
     Beam3dPartialTrapezoidLoad(int tag, double wTransya, double wTransza, double wAxiala, double aL, double bL, double wTransyb, double wTranszb, double wAxialb, int eleTag);
+
     Beam3dPartialTrapezoidLoad();
     ~Beam3dPartialTrapezoidLoad();
 

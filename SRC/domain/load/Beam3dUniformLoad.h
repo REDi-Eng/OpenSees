@@ -35,8 +35,7 @@ class Beam3dUniformLoad : public ElementalLoad
 {
   public:
     Beam3dUniformLoad(int tag, double wy, double wz, double wx, int eleTag);
-		      
-    Beam3dUniformLoad();    
+    Beam3dUniformLoad();
     ~Beam3dUniformLoad();
 
     const Vector &getData(int &type, double loadFactor);
@@ -51,6 +50,14 @@ class Beam3dUniformLoad : public ElementalLoad
     double wy;  // Transverse
     double wz;  // Transverse
     double wx;  // Axial
+    double wya;
+    double wza;
+    double wxa;
+    double aoverL;
+    double boverL;
+    double wyb;
+    double wzb;
+    double wxb;
     static Vector data;
 };
 
